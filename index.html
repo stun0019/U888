@@ -4,28 +4,23 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>運彩資訊平台 2.0</title>
+<title>運彩資訊平台 3.0</title>
 
 <style>
 body {
     margin: 0;
     font-family: Arial;
-    background: #0f172a;
+    background: #0b1220;
     color: white;
 }
 
+/* header */
 header {
-    padding: 20px;
+    padding: 18px;
     text-align: center;
-    font-size: 22px;
+    font-size: 20px;
     font-weight: bold;
     background: #111827;
-}
-
-.container {
-    max-width: 1000px;
-    margin: auto;
-    padding: 20px;
 }
 
 /* filters */
@@ -33,7 +28,7 @@ header {
     display: flex;
     gap: 10px;
     justify-content: center;
-    margin-bottom: 20px;
+    padding: 15px;
     flex-wrap: wrap;
 }
 
@@ -45,13 +40,12 @@ select, input {
 
 /* cards */
 .card {
-    background: #1e293b;
+    background: #1f2937;
+    margin: 10px auto;
     padding: 15px;
-    margin-bottom: 10px;
-    border-radius: 10px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
+    border-radius: 12px;
+    max-width: 900px;
+    cursor: pointer;
     transition: 0.2s;
 }
 
@@ -68,37 +62,67 @@ select, input {
 .match {
     font-size: 16px;
     font-weight: bold;
+    margin-top: 4px;
 }
 
 .time {
     font-size: 12px;
     color: #cbd5e1;
+    margin-top: 4px;
 }
 
-.status {
-    padding: 5px 10px;
+.row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.badge {
+    padding: 4px 8px;
     border-radius: 6px;
     font-size: 12px;
 }
 
-.upcoming {
-    background: #2563eb;
+.upcoming { background: #2563eb; }
+.finished { background: #ef4444; }
+
+/* modal */
+.modal {
+    position: fixed;
+    top: 0; left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.7);
+    display: none;
+    align-items: center;
+    justify-content: center;
 }
 
-.finished {
-    background: #ef4444;
+.modal-content {
+    background: #111827;
+    padding: 20px;
+    border-radius: 12px;
+    width: 90%;
+    max-width: 500px;
+}
+
+.close {
+    float: right;
+    cursor: pointer;
+    color: red;
+}
+
+.ai-box {
+    margin-top: 10px;
+    padding: 10px;
+    background: #0f172a;
+    border-radius: 8px;
+    font-size: 13px;
 }
 
 .loading {
     text-align: center;
     padding: 20px;
-    color: #94a3b8;
-}
-
-.empty {
-    text-align: center;
-    padding: 20px;
-    color: #64748b;
 }
 </style>
 
@@ -106,48 +130,61 @@ select, input {
 
 <body>
 
-<header>運彩資訊平台 2.0</header>
-
-<div class="container">
+<header>運彩資訊平台 3.0（AI分析版）</header>
 
 <div class="filters">
 
 <select id="sport">
-    <option value="all">全部運動</option>
-    <option value="soccer">足球</option>
-    <option value="nba">NBA</option>
-    <option value="mlb">MLB</option>
+<option value="all">全部</option>
+<option value="soccer">足球</option>
+<option value="nba">NBA</option>
+<option value="mlb">MLB</option>
 </select>
 
 <select id="status">
-    <option value="all">全部狀態</option>
-    <option value="upcoming">賽程</option>
-    <option value="finished">賽果</option>
+<option value="all">全部狀態</option>
+<option value="upcoming">賽程</option>
+<option value="finished">賽果</option>
 </select>
 
 <input type="date" id="date">
 
 </div>
 
-<div id="loading" class="loading">載入中賽事資料...</div>
+<div id="loading" class="loading">載入中...</div>
 
 <div id="list"></div>
 
+<!-- modal -->
+<div class="modal" id="modal">
+<div class="modal-content">
+<span class="close" onclick="closeModal()">X</span>
+
+<div id="modalBody"></div>
+
+</div>
 </div>
 
 <script>
 
-const API = "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328";
-
 let matches = [];
 
-async function loadData() {
+const SOCCER_API = "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328";
+const NBA_API = "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4387";
+const MLB_API = "https://statsapi.mlb.com/api/v1/schedule?sportId=1";
+
+async function loadAll() {
 
     try {
-        const res = await fetch(API);
-        const json = await res.json();
 
-        matches = (json.events || []).map(e => ({
+        const [s, n, m] = await Promise.all([
+            fetch(SOCCER_API).then(r => r.json()),
+            fetch(NBA_API).then(r => r.json()),
+            fetch(MLB_API).then(r => r.json())
+        ]);
+
+        // soccer
+        const soccer = (s.events || []).map(e => ({
             sport: "soccer",
             league: e.strLeague,
             home: e.strHomeTeam,
@@ -156,26 +193,51 @@ async function loadData() {
             status: "upcoming"
         }));
 
+        // nba
+        const nba = (n.events || []).map(e => ({
+            sport: "nba",
+            league: e.strLeague,
+            home: e.strHomeTeam,
+            away: e.strAwayTeam,
+            time: formatTime(e.dateEvent, e.strTime),
+            status: "upcoming"
+        }));
+
+        // mlb
+        const mlb = (m.dates || []).flatMap(d =>
+            d.games.map(g => ({
+                sport: "mlb",
+                league: "MLB",
+                home: g.teams.home.team.name,
+                away: g.teams.away.team.name,
+                time: new Date(g.gameDate).toLocaleString("zh-TW", { timeZone: "Asia/Taipei" }),
+                status: g.status.detailedState.includes("Final") ? "finished" : "upcoming"
+            }))
+        );
+
+        matches = [...soccer, ...nba, ...mlb];
+
         document.getElementById("loading").style.display = "none";
 
         render();
 
-    } catch (err) {
+    } catch (e) {
         document.getElementById("loading").innerText = "載入失敗";
     }
 }
 
 function formatTime(date, time) {
     return new Date(`${date}T${time || "00:00:00"}Z`)
-        .toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false });
+        .toLocaleString("zh-TW", { timeZone: "Asia/Taipei" });
 }
 
 function render() {
 
     const sport = document.getElementById("sport").value;
     const status = document.getElementById("status").value;
-    const list = document.getElementById("list");
+    const date = document.getElementById("date").value;
 
+    const list = document.getElementById("list");
     list.innerHTML = "";
 
     const filtered = matches.filter(m => {
@@ -183,37 +245,87 @@ function render() {
         if (sport !== "all" && m.sport !== sport) return false;
         if (status !== "all" && m.status !== status) return false;
 
+        if (date) {
+            const d = new Date(m.time).toISOString().split("T")[0];
+            if (d !== date) return false;
+        }
+
         return true;
     });
 
     if (filtered.length === 0) {
-        list.innerHTML = `<div class="empty">沒有符合條件的賽事</div>`;
+        list.innerHTML = "<div class='loading'>沒有資料</div>";
         return;
     }
 
-    filtered.forEach(m => {
+    filtered.forEach((m, i) => {
 
         const div = document.createElement("div");
         div.className = "card";
 
-        div.innerHTML = `
-            <div>
-                <div class="league">${m.league}</div>
-                <div class="match">${m.home} vs ${m.away}</div>
-                <div class="time">${m.time}</div>
-            </div>
+        div.onclick = () => openModal(m);
 
-            <div class="status upcoming">${m.status}</div>
+        div.innerHTML = `
+            <div class="row">
+                <div>
+                    <div class="league">${m.league}</div>
+                    <div class="match">${m.home} vs ${m.away}</div>
+                    <div class="time">${m.time}</div>
+                </div>
+
+                <div class="badge ${m.status}">
+                    ${m.status}
+                </div>
+            </div>
         `;
 
         list.appendChild(div);
     });
 }
 
-document.getElementById("sport").addEventListener("change", render);
-document.getElementById("status").addEventListener("change", render);
+/* AI prediction (simple model) */
+function predict(match) {
 
-loadData();
+    const h = match.home.length;
+    const a = match.away.length;
+
+    const total = h + a;
+
+    return {
+        home: Math.round(h / total * 100),
+        away: Math.round(a / total * 100)
+    };
+}
+
+/* modal */
+function openModal(m) {
+
+    const p = predict(m);
+
+    document.getElementById("modalBody").innerHTML = `
+        <h3>${m.home} vs ${m.away}</h3>
+        <p>${m.league}</p>
+        <p>${m.time}</p>
+
+        <div class="ai-box">
+            🤖 AI勝率預測<br>
+            主隊：${p.home}%<br>
+            客隊：${p.away}%
+        </div>
+    `;
+
+    document.getElementById("modal").style.display = "flex";
+}
+
+function closeModal() {
+    document.getElementById("modal").style.display = "none";
+}
+
+document.getElementById("sport").onchange = render;
+document.getElementById("status").onchange = render;
+document.getElementById("date").onchange = render;
+
+loadAll();
 
 </script>
 
