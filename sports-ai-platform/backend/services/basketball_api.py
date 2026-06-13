@@ -1,13 +1,13 @@
 import httpx
 
-API_BASE = "https://www.thesportsdb.com/api/v1/json/3"
+BASE_URL = "https://www.thesportsdb.com/api/v1/json/3"
 
-async def get_nba_matches():
+async def fetch_nba_matches():
 
     async with httpx.AsyncClient() as client:
 
         res = await client.get(
-            f"{API_BASE}/eventsnextleague.php?id=4387"
+            f"{BASE_URL}/eventsnextleague.php?id=4387"
         )
 
         data = res.json()
@@ -18,8 +18,14 @@ async def get_nba_matches():
                 "league": e.get("strLeague"),
                 "home": e.get("strHomeTeam"),
                 "away": e.get("strAwayTeam"),
-                "time": f"{e.get('dateEvent')} {e.get('strTime')}",
+                "home_score": None,
+                "away_score": None,
+                "time": build_time(e),
                 "status": "upcoming"
             }
             for e in data.get("events", [])
         ]
+
+
+def build_time(e):
+    return f"{e.get('dateEvent')}T{e.get('strTime') or '00:00:00'}Z"
