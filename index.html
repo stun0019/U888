@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>運彩資訊平台 5.0</title>
+<title>運彩資訊平台 6.0</title>
 
 <style>
 body {
@@ -22,6 +22,14 @@ header {
     font-weight: bold;
 }
 
+/* progress bar */
+#progressBar {
+    height: 3px;
+    width: 0%;
+    background: #3b82f6;
+    transition: width 0.3s;
+}
+
 /* layout */
 .container {
     max-width: 1000px;
@@ -33,9 +41,9 @@ header {
 .filters {
     display: flex;
     gap: 10px;
-    flex-wrap: wrap;
     justify-content: center;
-    margin-bottom: 10px;
+    flex-wrap: wrap;
+    margin: 10px 0;
 }
 
 select {
@@ -57,7 +65,7 @@ select {
     background: #273449;
 }
 
-/* AI score */
+/* badge */
 .score {
     float: right;
     background: #2563eb;
@@ -66,7 +74,7 @@ select {
     font-size: 12px;
 }
 
-/* detail page */
+/* pages */
 .page {
     display: none;
     max-width: 700px;
@@ -81,14 +89,15 @@ select {
     display: inline-block;
 }
 
-.ai-box {
-    background: #0f172a;
-    padding: 10px;
-    border-radius: 8px;
-    margin-top: 10px;
+/* loading */
+.loading {
+    text-align: center;
+    padding: 20px;
+    color: #94a3b8;
 }
 
-.loading {
+.error {
+    color: #ef4444;
     text-align: center;
     padding: 20px;
 }
@@ -98,10 +107,11 @@ select {
 
 <body>
 
-<header>運彩資訊平台 5.0（AI推薦版）</header>
+<header>運彩資訊平台 6.0（Loading + AI穩定版）</header>
 
-<!-- LIST PAGE -->
-<div class="container" id="listPage">
+<div id="progressBar"></div>
+
+<div class="container">
 
 <div class="filters">
 
@@ -114,56 +124,88 @@ select {
 
 </div>
 
+<!-- LIST -->
+<div id="listPage">
 <div id="list"></div>
-
 </div>
 
-<!-- DETAIL PAGE -->
-<div class="page" id="detailPage">
+<!-- DETAIL -->
+<div id="detailPage" class="page">
 <span class="back" onclick="back()">← 返回</span>
 <div id="detail"></div>
 </div>
 
+</div>
+
 <script>
 
-/* DATA STORE */
 let matches = [];
 
-/* API */
-const APIs = {
+/* APIs */
+const API = {
     soccer: "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328",
     nba: "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4387",
     mlb: "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
 };
 
-/* LOAD */
-async function loadAll() {
+/* progress bar */
+function setProgress(v) {
+    document.getElementById("progressBar").style.width = v + "%";
+}
 
-    const [s, n, m] = await Promise.all([
-        fetch(APIs.soccer).then(r => r.json()),
-        fetch(APIs.nba).then(r => r.json()),
-        fetch(APIs.mlb).then(r => r.json())
-    ]);
+/* fetch wrapper */
+async function fetchWithProgress(url, step) {
 
-    const soccer = (s.events || []).map(e => normalize(e, "soccer"));
-    const nba = (n.events || []).map(e => normalize(e, "nba"));
+    setProgress(step);
 
-    const mlb = (m.dates || []).flatMap(d =>
-        d.games.map(g => ({
-            id: g.gamePk,
-            sport: "mlb",
-            league: "MLB",
-            home: g.teams.home.team.name,
-            away: g.teams.away.team.name,
-            time: g.gameDate,
-            status: g.status.detailedState.includes("Final") ? "finished" : "upcoming"
-        }))
-    );
+    const res = await fetch(url);
+    const data = await res.json();
 
-    matches = [...soccer, ...nba, ...mlb];
+    setProgress(step + 30);
 
-    render();
-    setInterval(loadAll, 30000);
+    return data;
+}
+
+/* load all */
+async function load() {
+
+    try {
+
+        setProgress(10);
+
+        const [s, n, m] = await Promise.all([
+            fetchWithProgress(API.soccer, 20),
+            fetchWithProgress(API.nba, 50),
+            fetchWithProgress(API.mlb, 80)
+        ]);
+
+        setProgress(100);
+
+        const soccer = (s.events || []).map(e => normalize(e, "soccer"));
+        const nba = (n.events || []).map(e => normalize(e, "nba"));
+
+        const mlb = (m.dates || []).flatMap(d =>
+            d.games.map(g => ({
+                id: g.gamePk,
+                sport: "mlb",
+                league: "MLB",
+                home: g.teams.home.team.name,
+                away: g.teams.away.team.name,
+                time: g.gameDate,
+                status: g.status.detailedState.includes("Final") ? "finished" : "upcoming"
+            }))
+        );
+
+        matches = [...soccer, ...nba, ...mlb];
+
+        render();
+
+        setTimeout(() => setProgress(0), 500);
+
+    } catch (e) {
+        document.getElementById("list").innerHTML =
+            "<div class='error'>API 載入失敗</div>";
+    }
 }
 
 /* normalize */
@@ -179,72 +221,77 @@ function normalize(e, sport) {
     };
 }
 
-/* AI MODEL (ELO + FORM) */
-function aiScore(m) {
+/* AI model (stable version) */
+function ai(m) {
 
     const base = 50;
 
     const h = m.home.length;
     const a = m.away.length;
 
-    const elo = (h - a) * 2;
+    let diff = (h - a) * 3;
 
-    const form = Math.random() * 10;
-
-    let home = base + elo + form;
+    let home = base + diff;
     let away = 100 - home;
 
-    home = Math.max(10, Math.min(90, home));
+    home = Math.max(15, Math.min(85, home));
     away = 100 - home;
 
     return {
         home: Math.round(home),
         away: Math.round(away),
-        value: Math.abs(home - 50)
+        confidence: Math.abs(home - 50)
     };
 }
 
-/* RENDER LIST */
+/* render */
 function render() {
 
     const list = document.getElementById("list");
     const sport = document.getElementById("sport").value;
 
-    list.innerHTML = "";
+    list.innerHTML = "<div class='loading'>整理賽事資料中...</div>";
 
-    const filtered = matches
-        .filter(m => sport === "all" || m.sport === sport)
-        .map(m => ({ ...m, ai: aiScore(m) }))
-        .sort((a, b) => b.ai.value - a.ai.value); // AI推薦排序
+    setTimeout(() => {
 
-    if (!filtered.length) {
-        list.innerHTML = "<div class='loading'>沒有資料</div>";
-        return;
-    }
+        const filtered = matches
+            .filter(m => sport === "all" || m.sport === sport)
+            .map(m => ({ ...m, ai: ai(m) }))
+            .sort((a, b) => b.ai.confidence - a.ai.confidence);
 
-    filtered.forEach(m => {
+        if (!filtered.length) {
+            list.innerHTML = "<div class='loading'>沒有資料</div>";
+            return;
+        }
 
-        const div = document.createElement("div");
-        div.className = "card";
+        list.innerHTML = "";
 
-        div.onclick = () => openDetail(m);
+        filtered.forEach(m => {
 
-        div.innerHTML = `
-            <div>
-                ${m.league}
-                <span class="score">${m.ai.home}%</span>
-            </div>
-            <div>${m.home} vs ${m.away}</div>
-        `;
+            const div = document.createElement("div");
+            div.className = "card";
 
-        list.appendChild(div);
-    });
+            div.onclick = () => openDetail(m);
+
+            div.innerHTML = `
+                <div>
+                    ${m.league}
+                    <span class="score">${m.ai.home}%</span>
+                </div>
+                <div>${m.home} vs ${m.away}</div>
+                <div style="font-size:12px;color:#94a3b8">${m.time}</div>
+            `;
+
+            list.appendChild(div);
+        });
+
+    }, 400);
 }
 
-/* DETAIL PAGE */
+/* detail */
 function openDetail(m) {
 
-    const ai = m.ai || aiScore(m);
+    const ai = m.ai;
 
     document.getElementById("listPage").style.display = "none";
     document.getElementById("detailPage").style.display = "block";
@@ -253,11 +300,11 @@ function openDetail(m) {
         <h2>${m.home} vs ${m.away}</h2>
         <p>${m.league}</p>
 
-        <div class="ai-box">
-            🤖 AI分析模型（5.0）<br><br>
-            主勝率：${ai.home}%<br>
-            客勝率：${ai.away}%<br>
-            差值：${ai.value}
+        <div style="background:#0f172a;padding:10px;border-radius:8px;">
+            🤖 AI分析<br><br>
+            主隊勝率：${ai.home}%<br>
+            客隊勝率：${ai.away}%<br>
+            信心值：${ai.confidence}
         </div>
 
         <p>時間：${m.time}</p>
@@ -266,17 +313,16 @@ function openDetail(m) {
     history.pushState({}, "", "#match-" + m.id);
 }
 
-/* BACK */
+/* back */
 function back() {
     document.getElementById("listPage").style.display = "block";
     document.getElementById("detailPage").style.display = "none";
 }
 
-/* filter */
+/* init */
 document.getElementById("sport").onchange = render;
 
-/* init */
-loadAll();
+load();
 
 </script>
 
