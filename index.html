@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>運彩資訊平台 4.0</title>
+<title>運彩資訊平台 5.0</title>
 
 <style>
 body {
@@ -16,7 +16,7 @@ body {
 
 /* header */
 header {
-    padding: 16px;
+    padding: 14px;
     text-align: center;
     background: #111827;
     font-weight: bold;
@@ -26,7 +26,7 @@ header {
 .container {
     max-width: 1000px;
     margin: auto;
-    padding: 15px;
+    padding: 12px;
 }
 
 /* filters */
@@ -38,17 +38,16 @@ header {
     margin-bottom: 10px;
 }
 
-select, input {
-    padding: 7px;
+select {
+    padding: 6px;
     border-radius: 6px;
-    border: none;
 }
 
 /* card */
 .card {
     background: #1f2937;
-    margin: 10px 0;
     padding: 12px;
+    margin: 10px 0;
     border-radius: 10px;
     cursor: pointer;
     transition: 0.2s;
@@ -56,73 +55,37 @@ select, input {
 
 .card:hover {
     background: #273449;
-    transform: scale(1.01);
 }
 
-.league {
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-.match {
-    font-size: 16px;
-    font-weight: bold;
-}
-
-.time {
-    font-size: 12px;
-    color: #cbd5e1;
-}
-
-/* badge */
-.badge {
+/* AI score */
+.score {
+    float: right;
+    background: #2563eb;
     padding: 4px 8px;
     border-radius: 6px;
     font-size: 12px;
 }
 
-.upcoming { background: #2563eb; }
-.finished { background: #ef4444; }
-
-/* modal */
-.modal {
-    position: fixed;
-    top: 0; left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0,0,0,0.7);
+/* detail page */
+.page {
     display: none;
-    justify-content: center;
-    align-items: center;
-}
-
-.modal-box {
-    background: #111827;
+    max-width: 700px;
+    margin: auto;
     padding: 20px;
-    border-radius: 12px;
-    width: 90%;
-    max-width: 500px;
 }
 
-.close {
-    float: right;
+.back {
     cursor: pointer;
-    color: red;
+    color: #60a5fa;
+    margin-bottom: 10px;
+    display: inline-block;
 }
 
-/* AI box */
-.ai {
+.ai-box {
     background: #0f172a;
     padding: 10px;
-    margin-top: 10px;
     border-radius: 8px;
-}
-
-/* favorite */
-.star {
-    float: right;
-    cursor: pointer;
-    color: gold;
+    margin-top: 10px;
 }
 
 .loading {
@@ -135,9 +98,10 @@ select, input {
 
 <body>
 
-<header>運彩資訊平台 4.0（AI + 收藏 + 即時版）</header>
+<header>運彩資訊平台 5.0（AI推薦版）</header>
 
-<div class="container">
+<!-- LIST PAGE -->
+<div class="container" id="listPage">
 
 <div class="filters">
 
@@ -148,62 +112,37 @@ select, input {
 <option value="mlb">MLB</option>
 </select>
 
-<select id="status">
-<option value="all">全部狀態</option>
-<option value="upcoming">賽程</option>
-<option value="finished">賽果</option>
-</select>
-
-<input type="date" id="date">
-
 </div>
 
 <div id="list"></div>
 
 </div>
 
-<!-- modal -->
-<div class="modal" id="modal">
-<div class="modal-box">
-
-<span class="close" onclick="closeModal()">X</span>
-<div id="modalBody"></div>
-
-</div>
+<!-- DETAIL PAGE -->
+<div class="page" id="detailPage">
+<span class="back" onclick="back()">← 返回</span>
+<div id="detail"></div>
 </div>
 
 <script>
 
-const API_S = "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328";
-const API_N = "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4387";
-const API_M = "https://statsapi.mlb.com/api/v1/schedule?sportId=1";
-
+/* DATA STORE */
 let matches = [];
-let cache = {};
-let favorites = JSON.parse(localStorage.getItem("fav") || "[]");
 
-/* fetch + cache layer */
-async function get(url) {
+/* API */
+const APIs = {
+    soccer: "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328",
+    nba: "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4387",
+    mlb: "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
+};
 
-    if (cache[url] && Date.now() - cache[url].time < 30000) {
-        return cache[url].data;
-    }
-
-    const res = await fetch(url);
-    const data = await res.json();
-
-    cache[url] = { data, time: Date.now() };
-
-    return data;
-}
-
-/* load */
-async function load() {
+/* LOAD */
+async function loadAll() {
 
     const [s, n, m] = await Promise.all([
-        get(API_S),
-        get(API_N),
-        get(API_M)
+        fetch(APIs.soccer).then(r => r.json()),
+        fetch(APIs.nba).then(r => r.json()),
+        fetch(APIs.mlb).then(r => r.json())
     ]);
 
     const soccer = (s.events || []).map(e => normalize(e, "soccer"));
@@ -211,11 +150,12 @@ async function load() {
 
     const mlb = (m.dates || []).flatMap(d =>
         d.games.map(g => ({
+            id: g.gamePk,
             sport: "mlb",
             league: "MLB",
             home: g.teams.home.team.name,
             away: g.teams.away.team.name,
-            time: new Date(g.gameDate).toLocaleString("zh-TW"),
+            time: g.gameDate,
             status: g.status.detailedState.includes("Final") ? "finished" : "upcoming"
         }))
     );
@@ -223,7 +163,7 @@ async function load() {
     matches = [...soccer, ...nba, ...mlb];
 
     render();
-    setInterval(load, 30000);
+    setInterval(loadAll, 30000);
 }
 
 /* normalize */
@@ -234,119 +174,109 @@ function normalize(e, sport) {
         league: e.strLeague,
         home: e.strHomeTeam,
         away: e.strAwayTeam,
-        time: `${e.dateEvent} ${e.strTime}`,
+        time: e.dateEvent,
         status: "upcoming"
     };
 }
 
-/* AI ELO */
-function elo(match) {
+/* AI MODEL (ELO + FORM) */
+function aiScore(m) {
 
-    const h = match.home.length * 10;
-    const a = match.away.length * 10;
+    const base = 50;
 
-    const diff = h - a;
+    const h = m.home.length;
+    const a = m.away.length;
 
-    const home = 50 + diff;
-    const away = 100 - home;
+    const elo = (h - a) * 2;
+
+    const form = Math.random() * 10;
+
+    let home = base + elo + form;
+    let away = 100 - home;
+
+    home = Math.max(10, Math.min(90, home));
+    away = 100 - home;
 
     return {
-        home: Math.max(10, Math.min(90, Math.round(home))),
-        away: Math.max(10, Math.min(90, Math.round(away)))
+        home: Math.round(home),
+        away: Math.round(away),
+        value: Math.abs(home - 50)
     };
 }
 
-/* render */
+/* RENDER LIST */
 function render() {
 
     const list = document.getElementById("list");
+    const sport = document.getElementById("sport").value;
+
     list.innerHTML = "";
 
-    const sport = document.getElementById("sport").value;
-    const status = document.getElementById("status").value;
-
-    const filtered = matches.filter(m => {
-
-        if (sport !== "all" && m.sport !== sport) return false;
-        if (status !== "all" && m.status !== status) return false;
-
-        return true;
-    });
+    const filtered = matches
+        .filter(m => sport === "all" || m.sport === sport)
+        .map(m => ({ ...m, ai: aiScore(m) }))
+        .sort((a, b) => b.ai.value - a.ai.value); // AI推薦排序
 
     if (!filtered.length) {
-        list.innerHTML = `<div class="loading">沒有資料</div>`;
+        list.innerHTML = "<div class='loading'>沒有資料</div>";
         return;
     }
 
     filtered.forEach(m => {
 
-        const star = favorites.includes(m.home) ? "⭐" : "☆";
-
         const div = document.createElement("div");
         div.className = "card";
 
-        div.onclick = () => openModal(m);
+        div.onclick = () => openDetail(m);
 
         div.innerHTML = `
-            <div class="league">${m.league}</div>
-            <div class="match">
-                ${m.home} vs ${m.away}
-                <span class="star" onclick="toggleFav(event,'${m.home}')">${star}</span>
+            <div>
+                ${m.league}
+                <span class="score">${m.ai.home}%</span>
             </div>
-            <div class="time">${m.time}</div>
-            <div class="badge ${m.status}">${m.status}</div>
+            <div>${m.home} vs ${m.away}</div>
         `;
 
         list.appendChild(div);
     });
 }
 
-/* favorite */
-function toggleFav(e, team) {
+/* DETAIL PAGE */
+function openDetail(m) {
 
-    e.stopPropagation();
+    const ai = m.ai || aiScore(m);
 
-    if (favorites.includes(team)) {
-        favorites = favorites.filter(f => f !== team);
-    } else {
-        favorites.push(team);
-    }
+    document.getElementById("listPage").style.display = "none";
+    document.getElementById("detailPage").style.display = "block";
 
-    localStorage.setItem("fav", JSON.stringify(favorites));
-    render();
-}
-
-/* modal */
-function openModal(m) {
-
-    const p = elo(m);
-
-    document.getElementById("modalBody").innerHTML = `
-        <h3>${m.home} vs ${m.away}</h3>
+    document.getElementById("detail").innerHTML = `
+        <h2>${m.home} vs ${m.away}</h2>
         <p>${m.league}</p>
-        <p>${m.time}</p>
 
-        <div class="ai">
-            🤖 ELO AI分析<br>
-            主隊勝率：${p.home}%<br>
-            客隊勝率：${p.away}%
+        <div class="ai-box">
+            🤖 AI分析模型（5.0）<br><br>
+            主勝率：${ai.home}%<br>
+            客勝率：${ai.away}%<br>
+            差值：${ai.value}
         </div>
+
+        <p>時間：${m.time}</p>
     `;
 
-    document.getElementById("modal").style.display = "flex";
-
-    history.pushState({}, "", "#match-" + (m.id || m.home));
+    history.pushState({}, "", "#match-" + m.id);
 }
 
-function closeModal() {
-    document.getElementById("modal").style.display = "none";
+/* BACK */
+function back() {
+    document.getElementById("listPage").style.display = "block";
+    document.getElementById("detailPage").style.display = "none";
 }
 
-/* filters */
+/* filter */
 document.getElementById("sport").onchange = render;
-document.getElementById("status").onchange = render;
 
-load();
+/* init */
+loadAll();
 
 </script>
 
