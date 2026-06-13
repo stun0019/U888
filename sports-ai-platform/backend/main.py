@@ -5,7 +5,7 @@ from routers import soccer, nba, mlb
 
 app = FastAPI(
     title="Sports AI Platform API",
-    version="1.0"
+    version="1.0.0"
 )
 
 app.add_middleware(
