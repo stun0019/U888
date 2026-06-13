@@ -4,28 +4,31 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>Sports AI Platform</title>
+<title>運彩資訊平台 2.0</title>
 
 <style>
 body {
-    font-family: Arial;
     margin: 0;
+    font-family: Arial;
+    background: #0f172a;
+    color: white;
+}
+
+header {
     padding: 20px;
-    background: #f4f6f9;
+    text-align: center;
+    font-size: 22px;
+    font-weight: bold;
+    background: #111827;
 }
 
 .container {
-    max-width: 900px;
+    max-width: 1000px;
     margin: auto;
-    background: white;
     padding: 20px;
-    border-radius: 10px;
 }
 
-h1 {
-    text-align: center;
-}
-
+/* filters */
 .filters {
     display: flex;
     gap: 10px;
@@ -36,50 +39,76 @@ h1 {
 
 select, input {
     padding: 8px;
+    border-radius: 6px;
+    border: none;
 }
 
-table {
-    width: 100%;
-    border-collapse: collapse;
+/* cards */
+.card {
+    background: #1e293b;
+    padding: 15px;
+    margin-bottom: 10px;
+    border-radius: 10px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: 0.2s;
 }
 
-th {
-    background: #1a365d;
-    color: white;
-    padding: 10px;
+.card:hover {
+    transform: scale(1.01);
+    background: #273449;
 }
 
-td {
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+.league {
+    font-size: 12px;
+    color: #94a3b8;
 }
 
-tr:hover {
-    background: #f1f5f9;
-}
-
-.status-upcoming {
-    color: blue;
+.match {
+    font-size: 16px;
     font-weight: bold;
 }
 
-.status-finished {
-    color: red;
-    font-weight: bold;
+.time {
+    font-size: 12px;
+    color: #cbd5e1;
+}
+
+.status {
+    padding: 5px 10px;
+    border-radius: 6px;
+    font-size: 12px;
+}
+
+.upcoming {
+    background: #2563eb;
+}
+
+.finished {
+    background: #ef4444;
 }
 
 .loading {
     text-align: center;
     padding: 20px;
+    color: #94a3b8;
+}
+
+.empty {
+    text-align: center;
+    padding: 20px;
+    color: #64748b;
 }
 </style>
+
 </head>
 
 <body>
 
-<div class="container">
+<header>運彩資訊平台 2.0</header>
 
-<h1>Sports AI Platform</h1>
+<div class="container">
 
 <div class="filters">
 
@@ -100,71 +129,92 @@ tr:hover {
 
 </div>
 
-<div class="loading" id="loading">載入中...</div>
+<div id="loading" class="loading">載入中賽事資料...</div>
 
-<table id="table" style="display:none;">
-<thead>
-<tr>
-<th>聯賽</th>
-<th>對戰</th>
-<th>時間 (UTC+8)</th>
-<th>狀態</th>
-</tr>
-</thead>
-
-<tbody id="body"></tbody>
-</table>
+<div id="list"></div>
 
 </div>
 
 <script>
+
 const API = "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328";
 
-let data = [];
+let matches = [];
 
-async function load() {
+async function loadData() {
 
-    const res = await fetch(API);
-    const json = await res.json();
+    try {
+        const res = await fetch(API);
+        const json = await res.json();
 
-    data = (json.events || []).map(e => ({
-        league: e.strLeague,
-        home: e.strHomeTeam,
-        away: e.strAwayTeam,
-        time: e.dateEvent + " " + (e.strTime || "00:00:00"),
-        status: "upcoming"
-    }));
+        matches = (json.events || []).map(e => ({
+            sport: "soccer",
+            league: e.strLeague,
+            home: e.strHomeTeam,
+            away: e.strAwayTeam,
+            time: formatTime(e.dateEvent, e.strTime),
+            status: "upcoming"
+        }));
 
-    document.getElementById("loading").style.display = "none";
-    document.getElementById("table").style.display = "table";
+        document.getElementById("loading").style.display = "none";
 
-    render();
+        render();
+
+    } catch (err) {
+        document.getElementById("loading").innerText = "載入失敗";
+    }
+}
+
+function formatTime(date, time) {
+    return new Date(`${date}T${time || "00:00:00"}Z`)
+        .toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false });
 }
 
 function render() {
 
-    const body = document.getElementById("body");
-    body.innerHTML = "";
+    const sport = document.getElementById("sport").value;
+    const status = document.getElementById("status").value;
+    const list = document.getElementById("list");
 
-    data.forEach(m => {
+    list.innerHTML = "";
 
-        const tr = document.createElement("tr");
+    const filtered = matches.filter(m => {
 
-        const time = new Date(m.time + "Z")
-            .toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false });
+        if (sport !== "all" && m.sport !== sport) return false;
+        if (status !== "all" && m.status !== status) return false;
 
-        tr.innerHTML = `
-            <td>${m.league}</td>
-            <td>${m.home} vs ${m.away}</td>
-            <td>${time}</td>
-            <td><span class="status-upcoming">${m.status}</span></td>
+        return true;
+    });
+
+    if (filtered.length === 0) {
+        list.innerHTML = `<div class="empty">沒有符合條件的賽事</div>`;
+        return;
+    }
+
+    filtered.forEach(m => {
+
+        const div = document.createElement("div");
+        div.className = "card";
+
+        div.innerHTML = `
+            <div>
+                <div class="league">${m.league}</div>
+                <div class="match">${m.home} vs ${m.away}</div>
+                <div class="time">${m.time}</div>
+            </div>
+
+            <div class="status upcoming">${m.status}</div>
         `;
 
-        body.appendChild(tr);
+        list.appendChild(div);
     });
 }
 
-load();
+document.getElementById("sport").addEventListener("change", render);
+document.getElementById("status").addEventListener("change", render);
+
+loadData();
+
 </script>
 
 </body>
