@@ -1,1 +1,58 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
 
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sports AI Platform</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="container">
+
+    <h1>Sports AI Platform</h1>
+
+    <div class="filters">
+
+        <select id="sportFilter">
+            <option value="all">全部運動</option>
+            <option value="soccer">足球</option>
+            <option value="nba">NBA</option>
+            <option value="mlb">MLB</option>
+        </select>
+
+        <select id="statusFilter">
+            <option value="all">全部狀態</option>
+            <option value="upcoming">賽程</option>
+            <option value="finished">賽果</option>
+        </select>
+
+        <input type="date" id="dateFilter">
+
+    </div>
+
+    <div id="loading">Loading matches...</div>
+
+    <table id="matchTable" style="display:none;">
+
+        <thead>
+            <tr>
+                <th>聯賽</th>
+                <th>對戰</th>
+                <th>時間 (UTC+8)</th>
+                <th>狀態</th>
+            </tr>
+        </thead>
+
+        <tbody id="matchBody"></tbody>
+
+    </table>
+
+</div>
+
+<script src="app.js"></script>
+
+</body>
+</html>
