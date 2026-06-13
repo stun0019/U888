@@ -1,31 +1,42 @@
 import httpx
 
-# MLB Stats API（簡化版 mock endpoint）
-API_BASE = "https://statsapi.mlb.com/api/v1"
+BASE_URL = "https://statsapi.mlb.com/api/v1"
 
-async def get_mlb_matches():
+async def fetch_mlb_matches():
 
     async with httpx.AsyncClient() as client:
 
         res = await client.get(
-            f"{API_BASE}/schedule?sportId=1"
+            f"{BASE_URL}/schedule?sportId=1"
         )
 
         data = res.json()
 
-        games = []
+        matches = []
 
-        for date in data.get("dates", []):
+        for date_block in data.get("dates", []):
 
-            for game in date.get("games", []):
+            for game in date_block.get("games", []):
 
-                games.append({
+                matches.append({
                     "sport": "mlb",
                     "league": "MLB",
                     "home": game["teams"]["home"]["team"]["name"],
                     "away": game["teams"]["away"]["team"]["name"],
+                    "home_score": game["teams"]["home"].get("score"),
+                    "away_score": game["teams"]["away"].get("score"),
                     "time": game.get("gameDate"),
-                    "status": game.get("status", {}).get("detailedState")
+                    "status": normalize_status(game)
                 })
 
-        return games
+        return matches
+
+
+def normalize_status(game):
+
+    state = game.get("status", {}).get("detailedState", "")
+
+    if state in ["Final", "Game Over"]:
+        return "finished"
+
+    return "upcoming"
