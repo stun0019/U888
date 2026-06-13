@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Sports AI Platform</title>
+
+<style>
+body {
+    font-family: Arial;
+    margin: 0;
+    padding: 20px;
+    background: #f4f6f9;
+}
+
+.container {
+    max-width: 900px;
+    margin: auto;
+    background: white;
+    padding: 20px;
+    border-radius: 10px;
+}
+
+h1 {
+    text-align: center;
+}
+
+.filters {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+select, input {
+    padding: 8px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #1a365d;
+    color: white;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    border-bottom: 1px solid #ddd;
+}
+
+tr:hover {
+    background: #f1f5f9;
+}
+
+.status-upcoming {
+    color: blue;
+    font-weight: bold;
+}
+
+.status-finished {
+    color: red;
+    font-weight: bold;
+}
+
+.loading {
+    text-align: center;
+    padding: 20px;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<h1>Sports AI Platform</h1>
+
+<div class="filters">
+
+<select id="sport">
+    <option value="all">全部運動</option>
+    <option value="soccer">足球</option>
+    <option value="nba">NBA</option>
+    <option value="mlb">MLB</option>
+</select>
+
+<select id="status">
+    <option value="all">全部狀態</option>
+    <option value="upcoming">賽程</option>
+    <option value="finished">賽果</option>
+</select>
+
+<input type="date" id="date">
+
+</div>
+
+<div class="loading" id="loading">載入中...</div>
+
+<table id="table" style="display:none;">
+<thead>
+<tr>
+<th>聯賽</th>
+<th>對戰</th>
+<th>時間 (UTC+8)</th>
+<th>狀態</th>
+</tr>
+</thead>
+
+<tbody id="body"></tbody>
+</table>
+
+</div>
+
+<script>
+const API = "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328";
+
+let data = [];
+
+async function load() {
+
+    const res = await fetch(API);
+    const json = await res.json();
+
+    data = (json.events || []).map(e => ({
+        league: e.strLeague,
+        home: e.strHomeTeam,
+        away: e.strAwayTeam,
+        time: e.dateEvent + " " + (e.strTime || "00:00:00"),
+        status: "upcoming"
+    }));
+
+    document.getElementById("loading").style.display = "none";
+    document.getElementById("table").style.display = "table";
+
+    render();
+}
+
+function render() {
+
+    const body = document.getElementById("body");
+    body.innerHTML = "";
+
+    data.forEach(m => {
+
+        const tr = document.createElement("tr");
+
+        const time = new Date(m.time + "Z")
+            .toLocaleString("zh-TW", { timeZone: "Asia/Taipei", hour12: false });
+
+        tr.innerHTML = `
+            <td>${m.league}</td>
+            <td>${m.home} vs ${m.away}</td>
+            <td>${time}</td>
+            <td><span class="status-upcoming">${m.status}</span></td>
+        `;
+
+        body.appendChild(tr);
+    });
+}
+
+load();
+</script>
+
+</body>
+</html>
