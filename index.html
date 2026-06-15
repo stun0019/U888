@@ -3,297 +3,290 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sports AI 分析中心</title>
+<title>Sports AI v4</title>
 
 <style>
-:root {
-  --bg-main: #0b0f19;
-  --bg-card: #151f32;
-  --bg-box: #1e293b;
-  --primary: #3b82f6;
-  --primary-hover: #2563eb;
-  --text-main: #f8fafc;
-  --text-muted: #94a3b8;
-  --accent-green: #10b981;
-  --accent-yellow: #f59e0b;
+body{
+margin:0;
+font-family:Arial;
+background:#0f172a;
+color:white;
 }
 
-body {
-  margin: 0;
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background: var(--bg-main);
-  color: var(--text-main);
-  line-height: 1.5;
+header{
+padding:20px;
+text-align:center;
+background:#1e293b;
+font-size:22px;
+font-weight:bold;
 }
 
-header {
-  background: linear-gradient(135deg, #1e293b, #0f172a);
-  padding: 24px;
-  text-align: center;
-  font-size: 24px;
-  font-weight: 800;
-  letter-spacing: 1px;
-  border-bottom: 1px solid #1e293b;
+.nav{
+display:flex;
+gap:10px;
+justify-content:center;
+flex-wrap:wrap;
+padding:15px;
 }
 
-.nav {
-  display: flex;
-  gap: 8px;
-  justify-content: center;
-  flex-wrap: wrap;
-  padding: 20px 15px;
+.nav button{
+padding:10px 16px;
+border:none;
+border-radius:8px;
+background:#334155;
+color:white;
+cursor:pointer;
 }
 
-.nav button {
-  padding: 10px 20px;
-  border: 1px solid #334155;
-  border-radius: 20px;
-  background: transparent;
-  color: var(--text-muted);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
+.nav button:hover{
+background:#3b82f6;
 }
 
-.nav button:hover, .nav button.active {
-  background: var(--primary);
-  color: white;
-  border-color: var(--primary);
-  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+.container{
+max-width:1100px;
+margin:auto;
+padding:20px;
 }
 
-.container {
-  max-width: 800px;
-  margin: auto;
-  padding: 0 20px 40px;
+.card{
+background:#1e293b;
+padding:16px;
+border-radius:12px;
+margin-bottom:12px;
 }
 
-.load {
-  margin-bottom: 24px;
-  padding: 12px;
-  width: 100%;
-  border: none;
-  border-radius: 12px;
-  background: var(--primary);
-  color: white;
-  font-weight: bold;
-  cursor: pointer;
-  transition: background 0.2s;
+.title{
+font-weight:bold;
+font-size:18px;
+display:flex;
+justify-content:space-between;
 }
 
-.load:hover {
-  background: var(--primary-hover);
+.sub{
+font-size:12px;
+color:#94a3b8;
 }
 
-.card {
-  background: var(--bg-card);
-  padding: 20px;
-  border-radius: 16px;
-  margin-bottom: 16px;
-  border: 1px solid #22314d;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
+margin-top:10px;
 }
 
-.time {
-  color: var(--text-muted);
-  font-size: 13px;
-  margin-bottom: 12px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
+.box{
+background:#334155;
+padding:10px;
+border-radius:8px;
+text-align:center;
 }
 
-.title {
-  font-size: 18px;
-  font-weight: 700;
-  margin-bottom: 16px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
+.badge{
+padding:4px 8px;
+border-radius:6px;
+font-size:12px;
+font-weight:bold;
 }
 
-.grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  margin-bottom: 16px;
-}
-
-.box {
-  background: var(--bg-box);
-  padding: 12px;
-  border-radius: 10px;
-  text-align: center;
-  border: 1px solid #334155;
-}
-
-.box .team-label {
-  font-size: 12px;
-  color: var(--text-muted);
-  margin-bottom: 4px;
-}
-
-.box .odds {
-  font-size: 20px;
-  font-weight: 700;
-  color: #fff;
-}
-
-.box .prob {
-  font-size: 13px;
-  color: var(--primary);
-  font-weight: 500;
-}
-
-.analysis-bar {
-  display: flex;
-  gap: 10px;
-  align-items: center;
-  background: rgba(15, 23, 42, 0.6);
-  padding: 10px 14px;
-  border-radius: 10px;
-}
-
-.badge {
-  padding: 4px 8px;
-  border-radius: 6px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.badge-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
-.badge-yellow { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); }
-
-.status-msg {
-  text-align: center;
-  padding: 40px;
-  color: var(--text-muted);
-}
+.green{background:#14532d;color:#22c55e;}
+.yellow{background:#422006;color:#facc15;}
+.red{background:#450a0a;color:#ef4444;}
 </style>
 </head>
 
 <body>
 
-<header>Sports AI 賽事分析系統</header>
+<header>Sports AI v4（ELO + Value + Kelly）</header>
 
 <div class="nav">
-  <button id="btn-tennis" onclick="switchSport('tennis_atp_wimbledon', this)" class="active">🎾 網球</button>
-  <button id="btn-nba" onclick="switchSport('basketball_nba', this)">🏀 NBA</button>
-  <button id="btn-soccer" onclick="switchSport('soccer_epl', this)">⚽ 足球</button>
-  <button id="btn-baseball" onclick="switchSport('baseball_mlb', this)">⚾ MLB</button>
+<button onclick="loadSport('tennis_atp_wimbledon')">🎾 網球</button>
+<button onclick="loadSport('basketball_nba')">🏀 NBA</button>
+<button onclick="loadSport('soccer_epl')">⚽ 足球</button>
+<button onclick="loadSport('baseball_mlb')">⚾ MLB</button>
 </div>
 
-<div class="container">
-  <button class="load" onclick="loadSport(currentSport)">更新目前賽事資料</button>
-  <div id="matches"></div>
-</div>
+<div class="container" id="matches"></div>
 
 <script>
-const API_KEY = "38e75c404956249117e5e414c38951a8";
-let currentSport = "tennis_atp_wimbledon";
 
-function switchSport(sport, btnElement) {
-  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
-  btnElement.classList.add('active');
-  loadSport(sport);
+const API_KEY = "38e75c404956249117e5e414c38951a8";
+
+/* --- 簡化 ELO（示意模型） --- */
+const ELO = {
+"defaultA": 1500,
+"defaultB": 1500
+};
+
+/* 中文對照 */
+const CN = {
+"Lakers":"湖人",
+"Warriors":"勇士",
+"Yankees":"洋基",
+"Red Sox":"紅襪",
+"Liverpool":"利物浦",
+"Arsenal":"阿森納"
+};
+
+function toCN(name){
+return CN[name] || "";
+}
+
+/* ELO勝率 */
+function eloProb(ra, rb){
+return 1 / (1 + Math.pow(10, (rb - ra)/400));
 }
 
 function loadSport(sport){
-  currentSport = sport;
-  document.getElementById("matches").innerHTML = '<div class="status-msg">資料載入中...</div>';
 
-  fetch(`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`)
-    .then(res => res.json())
-    .then(data => render(data))
-    .catch(err => {
-      document.getElementById("matches").innerHTML = '<div class="status-msg" style="color:#ef4444;">API 讀取失敗，請檢查金鑰或網路。</div>';
-      console.error(err);
-    });
+fetch(
+`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=us,eu,uk&markets=h2h&oddsFormat=decimal`
+)
+.then(r=>r.json())
+.then(render);
 }
 
-function calc(awayOdds, homeOdds, away, home){
-  const a = 1 / awayOdds;
-  const h = 1 / homeOdds;
-  const total = a + h;
-
-  const awayP = (a / total) * 100;
-  const homeP = (h / total) * 100;
-
-  // 計算相較於隱含機率的簡單估算 EV
-  let recommend, ev;
-  if(awayP > homeP){
-    recommend = away;
-    ev = ((awayP / 100) * awayOdds - 1) * 100;
-  } else {
-    recommend = home;
-    ev = ((homeP / 100) * homeOdds - 1) * 100;
-  }
-
-  return {
-    awayP: awayP.toFixed(1),
-    homeP: homeP.toFixed(1),
-    ev: ev.toFixed(1),
-    recommend
-  };
+/* EV */
+function calcEV(p, odds){
+return (p * odds - 1);
 }
 
-function render(matches){
-  let html = "";
-
-  if(!matches || matches.length === 0){
-    document.getElementById("matches").innerHTML = '<div class="status-msg">目前暫無賽事資料</div>';
-    return;
-  }
-
-  matches.forEach(m => {
-    if(!m.bookmakers?.length) return;
-
-    const book = m.bookmakers[0];
-    const market = book.markets[0];
-    if(!market) return;
-
-    const away = market.outcomes.find(x => x.name === m.away_team);
-    const home = market.outcomes.find(x => x.name === m.home_team);
-    if(!away || !home) return;
-
-    const r = calc(away.price, home.price, m.away_team, m.home_team);
-
-    html += `
-      <div class="card">
-        <div class="time">🕒 ${new Date(m.commence_time).toLocaleString('zh-TW', {hour12:false})}</div>
-        <div class="title">
-          <span>${m.away_team}</span>
-          <span style="color:var(--text-muted); font-size:14px; font-weight:normal;">VS</span>
-          <span>${m.home_team}</span>
-        </div>
-        
-        <div class="grid">
-          <div class="box">
-            <div class="team-label">客隊</div>
-            <div class="odds">${away.price}</div>
-            <div class="prob">${r.awayP}%</div>
-          </div>
-          <div class="box">
-            <div class="team-label">主隊</div>
-            <div class="odds">${home.price}</div>
-            <div class="prob">${r.homeP}%</div>
-          </div>
-        </div>
-
-        <div class="analysis-bar">
-          <span class="badge badge-green">推薦</span>
-          <span style="font-size:14px; font-weight:500; flex-grow:1;">${r.recommend}</span>
-          <span class="badge badge-yellow">EV ${r.ev}%</span>
-        </div>
-      </div>
-    `;
-  });
-
-  document.getElementById("matches").innerHTML = html;
+/* Kelly */
+function kelly(p, odds){
+return ((p * odds - 1) / (odds - 1));
 }
 
-// 首次載入
-loadSport(currentSport);
+function render(data){
+
+if(!data || data.length === 0){
+document.getElementById("matches").innerHTML = "無資料";
+return;
+}
+
+/* 排序 */
+data.sort((a,b)=>
+new Date(a.commence_time) - new Date(b.commence_time)
+);
+
+let html = "";
+
+data.forEach(m=>{
+
+if(!m.bookmakers?.length) return;
+
+const market = m.bookmakers[0].markets[0];
+if(!market) return;
+
+const away = market.outcomes.find(x=>x.name===m.away_team);
+const home = market.outcomes.find(x=>x.name===m.home_team);
+if(!away || !home) return;
+
+/* 隱含勝率 */
+const aImp = 1/away.price;
+const hImp = 1/home.price;
+const sum = aImp + hImp;
+
+const aP = aImp/sum;
+const hP = hImp/sum;
+
+/* 假 ELO */
+const ra = 1500 + Math.random()*100;
+const rb = 1500 + Math.random()*100;
+
+const eloA = eloProb(ra, rb);
+const eloH = 1 - eloA;
+
+/* Value */
+const vA = calcEV(eloA, away.price);
+const vH = calcEV(eloH, home.price);
+
+/* 判斷推薦 */
+let pick, pickProb, pickOdds, value;
+
+if(vA > vH){
+pick = m.away_team;
+pickProb = eloA;
+pickOdds = away.price;
+value = vA;
+}else{
+pick = m.home_team;
+pickProb = eloH;
+pickOdds = home.price;
+value = vH;
+}
+
+/* Kelly */
+const k = kelly(pickProb, pickOdds);
+
+/* 冷門警告 */
+let warn = "";
+if(value > 0.05){
+warn = `<span class="badge green">Value Bet</span>`;
+}else if(value < 0){
+warn = `<span class="badge red">負期望</span>`;
+}else{
+warn = `<span class="badge yellow">一般</span>`;
+}
+
+html += `
+<div class="card">
+
+<div class="title">
+<div>
+${m.away_team}
+<div class="sub">${toCN(m.away_team)}</div>
+</div>
+
+<div>VS</div>
+
+<div>
+${m.home_team}
+<div class="sub">${toCN(m.home_team)}</div>
+</div>
+</div>
+
+<div class="sub">
+🕒 ${new Date(m.commence_time).toLocaleString()}
+</div>
+
+<div class="grid">
+
+<div class="box">
+客隊<br>${away.price}<br>${(aP*100).toFixed(1)}%
+</div>
+
+<div class="box">
+主隊<br>${home.price}<br>${(hP*100).toFixed(1)}%
+</div>
+
+</div>
+
+<br>
+
+<div>
+🎯 推薦：<b>${pick}</b>
+</div>
+
+<div class="sub">
+ELO勝率 ${(pickProb*100).toFixed(1)}% ｜ EV ${(value*100).toFixed(2)}%
+</div>
+
+<div class="sub">
+Kelly ${(k*100).toFixed(2)}%
+</div>
+
+<div style="margin-top:8px;">
+${warn}
+</div>
+
+</div>
+`;
+});
+
+document.getElementById("matches").innerHTML = html;
+}
+
+loadSport("tennis_atp_wimbledon");
+
 </script>
 
 </body>
