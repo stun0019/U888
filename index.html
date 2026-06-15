@@ -1,142 +1,281 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI 賽事分析系統 v1.0</title>
+
+<style>
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+body{
+    font-family:Arial,sans-serif;
+    background:#0f172a;
+    color:white;
+}
+
+header{
+    background:#1e293b;
+    padding:20px;
+    text-align:center;
+    box-shadow:0 2px 10px rgba(0,0,0,.3);
+}
+
+h1{
+    margin-bottom:15px;
+}
+
+.controls{
+    display:flex;
+    gap:10px;
+    justify-content:center;
+    flex-wrap:wrap;
+}
+
+select,
+button{
+    padding:12px;
+    border:none;
+    border-radius:8px;
+}
+
+button{
+    background:#3b82f6;
+    color:white;
+    cursor:pointer;
+}
+
+button:hover{
+    background:#2563eb;
+}
+
+.container{
+    max-width:1400px;
+    margin:auto;
+    padding:20px;
+}
+
+.loading{
+    display:none;
+    text-align:center;
+    font-size:18px;
+    margin-top:20px;
+}
+
+.stats{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
+    gap:15px;
+    margin-bottom:20px;
+}
+
+.stat-card{
+    background:#1e293b;
+    padding:15px;
+    border-radius:12px;
+    text-align:center;
+}
+
+.card{
+    background:#1e293b;
+    padding:20px;
+    border-radius:15px;
+    margin-bottom:15px;
+}
+
+.match-title{
+    font-size:22px;
+    font-weight:bold;
+    margin-bottom:10px;
+}
+
+.time{
+    color:#94a3b8;
+    margin-bottom:15px;
+}
+
+.odds-grid{
+    display:grid;
+    grid-template-columns:1fr 1fr;
+    gap:15px;
+    margin-top:15px;
+}
+
+.box{
+    background:#334155;
+    padding:15px;
+    border-radius:10px;
+}
+
+.recommend{
+    color:#22c55e;
+    font-size:18px;
+    font-weight:bold;
+}
+
+.warning{
+    color:#ef4444;
+}
+
+.ev{
+    color:#facc15;
+}
+
+.good{
+    color:#22c55e;
+}
+
+.bad{
+    color:#ef4444;
+}
+
+.footer{
+    text-align:center;
+    margin-top:30px;
+    color:#94a3b8;
+}
+
+</style>
+</head>
+
+<body>
+
+<header>
+
+    <h1>AI 賽事分析系統</h1>
+
+    <div class="controls">
+
+        <select id="sport">
+
+            <option value="upcoming">
+                全部賽事
+            </option>
+
+            <option value="basketball_nba">
+                NBA
+            </option>
+
+            <option value="baseball_mlb">
+                MLB
+            </option>
+
+            <option value="soccer_epl">
+                英超
+            </option>
+
+            <option value="soccer_uefa_champs_league">
+                歐冠
+            </option>
+
+            <option value="tennis_atp_wimbledon">
+                ATP 網球
+            </option>
+
+        </select>
+
+        <button onclick="loadMatches()">
+            載入賽事
+        </button>
+
+    </div>
+
+</header>
+
+<div class="container">
+
+    <div class="stats">
+
+        <div class="stat-card">
+            <h2 id="matchCount">0</h2>
+            <p>賽事數量</p>
+        </div>
+
+        <div class="stat-card">
+            <h2 id="goodBet">0</h2>
+            <p>推薦投注</p>
+        </div>
+
+    </div>
+
+    <div id="loading" class="loading">
+        讀取即時賽事中...
+    </div>
+
+    <div id="matches"></div>
+
+</div>
+
+<div class="footer">
+    Powered by The Odds API
+</div>
+
+<script>
+
 const API_KEY = "38e75c404956249117e5e414c38951a8";
 
 async function loadMatches(){
 
     const sport =
-    document.getElementById("sportSelect").value;
+    document.getElementById("sport").value;
 
     document.getElementById("loading")
     .style.display = "block";
 
+    document.getElementById("matches")
+    .innerHTML = "";
+
     try{
 
-        const url =
-        `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+        let endpoint;
 
-        const response = await fetch(url);
+        if(sport === "upcoming"){
 
-        const data = await response.json();
+            endpoint =
+            `https://api.the-odds-api.com/v4/sports/upcoming/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+
+        }else{
+
+            endpoint =
+            `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+        }
+
+        const response =
+        await fetch(endpoint);
+
+        const data =
+        await response.json();
 
         renderMatches(data);
 
-    }
-    catch(error){
+    }catch(error){
 
         console.error(error);
 
         document.getElementById("matches")
         .innerHTML =
-        "<h2>資料讀取失敗</h2>";
+        "<h2>API讀取失敗</h2>";
+
     }
 
     document.getElementById("loading")
     .style.display = "none";
 }
 
-function renderMatches(matches){
-
-    let html = "";
-
-    matches.forEach(match=>{
-
-        if(!match.bookmakers?.length)
-            return;
-
-        const bookmaker =
-        match.bookmakers[0];
-
-        const market =
-        bookmaker.markets[0];
-
-        const away =
-        market.outcomes.find(
-        x=>x.name===match.away_team);
-
-        const home =
-        market.outcomes.find(
-        x=>x.name===match.home_team);
-
-        if(!away || !home)
-            return;
-
-        const awayOdds = away.price;
-        const homeOdds = home.price;
-
-        const analysis =
-        calculateEV(
-            awayOdds,
-            homeOdds,
-            match.away_team,
-            match.home_team
-        );
-
-        html += `
-        <div class="card">
-
-            <h2>
-            ${match.away_team}
-            VS
-            ${match.home_team}
-            </h2>
-
-            <p>
-            ${new Date(
-                match.commence_time
-            ).toLocaleString()}
-            </p>
-
-            <hr>
-
-            <p>
-            客隊賠率：
-            ${awayOdds}
-            </p>
-
-            <p>
-            主隊賠率：
-            ${homeOdds}
-            </p>
-
-            <p>
-            客勝率：
-            ${analysis.awayProb}%
-            </p>
-
-            <p>
-            主勝率：
-            ${analysis.homeProb}%
-            </p>
-
-            <p class="win">
-            推薦：
-            ${analysis.recommend}
-            </p>
-
-            <p class="ev">
-            EV：
-            ${analysis.ev}%
-            </p>
-
-        </div>
-        `;
-    });
-
-    document.getElementById("matches")
-    .innerHTML = html;
-}
-
-function calculateEV(
+function calculateAnalysis(
     awayOdds,
     homeOdds,
     awayTeam,
     homeTeam
 ){
 
-    const awayImp =
-    (1 / awayOdds);
-
-    const homeImp =
-    (1 / homeOdds);
+    const awayImp = 1 / awayOdds;
+    const homeImp = 1 / homeOdds;
 
     const total =
     awayImp + homeImp;
@@ -148,25 +287,36 @@ function calculateEV(
     (homeImp / total) * 100;
 
     let recommend;
+    let confidence;
     let ev;
 
     if(awayProb > homeProb){
 
         recommend = awayTeam;
 
+        confidence =
+        awayProb - homeProb;
+
         ev =
-        ((awayProb/100)
-        * awayOdds
-        -1) *100;
-    }
-    else{
+        (
+            (awayProb/100)
+            * awayOdds
+            -1
+        )*100;
+
+    }else{
 
         recommend = homeTeam;
 
+        confidence =
+        homeProb - awayProb;
+
         ev =
-        ((homeProb/100)
-        * homeOdds
-        -1) *100;
+        (
+            (homeProb/100)
+            * homeOdds
+            -1
+        )*100;
     }
 
     return{
@@ -177,6 +327,9 @@ function calculateEV(
         homeProb:
         homeProb.toFixed(2),
 
+        confidence:
+        confidence.toFixed(2),
+
         ev:
         ev.toFixed(2),
 
@@ -184,4 +337,156 @@ function calculateEV(
     };
 }
 
+function renderMatches(matches){
+
+    let html = "";
+
+    let recommendCount = 0;
+
+    matches.forEach(match=>{
+
+        if(
+            !match.bookmakers ||
+            match.bookmakers.length === 0
+        ){
+            return;
+        }
+
+        const market =
+        match.bookmakers[0]
+        .markets[0];
+
+        if(!market) return;
+
+        const away =
+        market.outcomes.find(
+            o => o.name === match.away_team
+        );
+
+        const home =
+        market.outcomes.find(
+            o => o.name === match.home_team
+        );
+
+        if(!away || !home)
+            return;
+
+        const analysis =
+        calculateAnalysis(
+            away.price,
+            home.price,
+            match.away_team,
+            match.home_team
+        );
+
+        if(
+            analysis.confidence >= 5
+        ){
+            recommendCount++;
+        }
+
+        html += `
+
+        <div class="card">
+
+            <div class="match-title">
+                ${match.away_team}
+                VS
+                ${match.home_team}
+            </div>
+
+            <div class="time">
+                ${new Date(
+                    match.commence_time
+                ).toLocaleString()}
+            </div>
+
+            <div class="odds-grid">
+
+                <div class="box">
+
+                    <h3>
+                        客隊
+                    </h3>
+
+                    <p>
+                        ${match.away_team}
+                    </p>
+
+                    <p>
+                        賠率:
+                        ${away.price}
+                    </p>
+
+                    <p>
+                        勝率:
+                        ${analysis.awayProb}%
+                    </p>
+
+                </div>
+
+                <div class="box">
+
+                    <h3>
+                        主隊
+                    </h3>
+
+                    <p>
+                        ${match.home_team}
+                    </p>
+
+                    <p>
+                        賠率:
+                        ${home.price}
+                    </p>
+
+                    <p>
+                        勝率:
+                        ${analysis.homeProb}%
+                    </p>
+
+                </div>
+
+            </div>
+
+            <br>
+
+            <div class="recommend">
+                推薦投注：
+                ${analysis.recommend}
+            </div>
+
+            <p>
+                信心值：
+                ${analysis.confidence}%
+            </p>
+
+            <p class="ev">
+                EV：
+                ${analysis.ev}%
+            </p>
+
+        </div>
+
+        `;
+    });
+
+    document.getElementById(
+        "matches"
+    ).innerHTML = html;
+
+    document.getElementById(
+        "matchCount"
+    ).innerText = matches.length;
+
+    document.getElementById(
+        "goodBet"
+    ).innerText = recommendCount;
+}
+
 loadMatches();
+
+</script>
+
+</body>
+</html>
