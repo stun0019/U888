@@ -3,17 +3,15 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sports AI v4 - 完整台彩側欄版</title>
+<title>Sports AI v6 - 台彩數據特種觀測台</title>
 
 <style>
 :root {
   --ts-yellow: #ffcc00; 
   --ts-red: #de2128;    
-  --ts-blue: #1e3a8a;   
   --bg-light: #f4f6f9;
   --text-dark: #1e293b;
-  --border-color: #cbd5e1;
-  --sidebar-width: 240px;
+  --sidebar-width: 250px;
 }
 
 body {
@@ -21,10 +19,11 @@ body {
   font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
   background: var(--bg-light);
   color: var(--text-dark);
-  overflow-x: hidden;
+  overflow: hidden;
+  height: 100vh;
 }
 
-/* 頂部漢堡鈕導覽列 */
+/* 頂部導覽列 */
 header {
   background: var(--ts-red);
   color: white;
@@ -49,17 +48,15 @@ header {
   padding: 8px;
   display: flex;
   align-items: center;
-  justify-content: center;
 }
 
 .header-title {
   font-size: 18px;
   font-weight: bold;
   margin-left: 12px;
-  letter-spacing: 0.5px;
 }
 
-/* 左側側邊欄 (台彩黃風格) */
+/* 左側側邊欄 (台彩黃) */
 .sidebar {
   position: fixed;
   top: 60px;
@@ -70,30 +67,24 @@ header {
   border-right: 2px solid #eab308;
   z-index: 90;
   transition: left 0.3s ease;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.05);
   padding-top: 10px;
 }
 
-.sidebar.open {
-  left: 0;
-}
+.sidebar.open { left: 0; }
 
 .sidebar button {
   width: 90%;
   margin: 6px 5%;
-  padding: 12px 16px;
+  padding: 14px 16px;
   border: none;
   background: transparent;
   color: #334155;
   font-weight: bold;
-  font-size: 16px;
+  font-size: 15px;
   text-align: left;
   cursor: pointer;
   border-radius: 6px;
   transition: all 0.2s;
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 .sidebar button:hover, .sidebar button.active {
@@ -102,164 +93,35 @@ header {
   box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* 點擊側欄外的遮罩 */
+/* 手機版遮罩 */
 .overlay {
   position: fixed;
-  top: 60px;
-  left: 0;
-  right: 0;
-  bottom: 0;
+  top: 60px; left: 0; right: 0; bottom: 0;
   background: rgba(0,0,0,0.4);
   z-index: 80;
   display: none;
 }
-.overlay.open {
-  display: block;
-}
+.overlay.open { display: block; }
 
-/* 主內容區塊 */
+/* 主內容區：滿版無縫隙無捲軸設計 */
 .main-content {
   margin-top: 60px;
-  padding: 16px;
+  height: calc(100vh - 60px);
   transition: margin-left 0.3s ease;
+  background: white;
+}
+
+/* 內嵌框架：100% 滿版填滿 */
+.data-frame {
+  width: 100%;
+  height: 100%;
+  border: none;
 }
 
 @media (min-width: 992px) {
   .sidebar { left: 0; }
   .main-content { margin-left: var(--sidebar-width); }
-  .menu-btn { display: none; } /* 桌機版預設展開，隱藏漢堡鈕 */
-}
-
-.container {
-  max-width: 800px;
-  margin: auto;
-}
-
-/* 賽事卡片排版 */
-.card {
-  background: white;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  margin-bottom: 12px;
-  overflow: hidden;
-  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-}
-
-.card-info {
-  background: #f8fafc;
-  padding: 8px 16px;
-  font-size: 13px;
-  color: #64748b;
-  border-bottom: 1px solid #f1f5f9;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.card-body {
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 12px;
-}
-
-@media (min-width: 600px) {
-  .card-body {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-}
-
-.teams-zone {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.team-display {
-  flex: 1;
-  text-align: center;
-}
-
-.team-name {
-  font-size: 18px;
-  font-weight: bold;
-  color: #0f172a;
-}
-
-.team-en {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.vs-label {
-  font-weight: 800;
-  color: #94a3b8;
-  font-style: italic;
-  padding: 0 10px;
-}
-
-.odds-zone {
-  display: flex;
-  gap: 8px;
-}
-
-.odds-btn {
-  background: #f1f5f9;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  padding: 8px 16px;
-  text-align: center;
-  min-width: 90px;
-}
-
-.odds-btn .label {
-  font-size: 11px;
-  color: #64748b;
-  margin-bottom: 2px;
-}
-
-.odds-btn .price {
-  font-size: 18px;
-  font-weight: bold;
-  color: var(--ts-blue);
-}
-
-.odds-btn .prob {
-  font-size: 11px;
-  color: #94a3b8;
-}
-
-.analysis-zone {
-  background: #fffbeb;
-  border-top: 1px dashed #fde68a;
-  padding: 12px 16px;
-  display: flex;
-  flex-wrap: wrap;
-  gap: 12px;
-  align-items: center;
-  font-size: 13px;
-}
-
-.badge {
-  padding: 3px 8px;
-  border-radius: 4px;
-  font-size: 12px;
-  font-weight: bold;
-}
-
-.badge.green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
-.badge.yellow { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
-.badge.red { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
-
-.status-msg {
-  text-align: center;
-  padding: 40px;
-  color: #64748b;
-  font-size: 16px;
+  .menu-btn { display: none; }
 }
 </style>
 </head>
@@ -268,194 +130,41 @@ header {
 
 <header>
   <button class="menu-btn" onclick="toggleMenu()">☰</button>
-  <div class="header-title">Sports AI 運彩特種分析系統 (v4)</div>
+  <div class="header-title">Sports AI × 台灣運彩官方數據觀測台</div>
 </header>
 
-<!-- 手機版點擊收合遮罩 -->
 <div class="overlay" id="overlay" onclick="toggleMenu()"></div>
 
-<!-- 左側導覽列 -->
 <div class="sidebar" id="sidebar">
-  <button id="tab-tennis" onclick="switchSport('tennis_atp_wimbledon', this)" class="active">🎾 網球 (溫網)</button>
-  <button id="tab-nba" onclick="switchSport('basketball_nba', this)">🏀 NBA 籃球</button>
-  <button id="tab-soccer" onclick="switchSport('soccer_epl', this)">⚽ 英超 足球</button>
-  <button id="tab-baseball" onclick="switchSport('baseball_mlb', this)">⚾ MLB 棒球</button>
+  <button id="tab-soccer" onclick="switchUrl('https://statshub.sportradar.com/taiwansportslottery/zht/sport/1', this)" class="active">⚽ 足球賽程賽果</button>
+  <button id="tab-basketball" onclick="switchUrl('https://statshub.sportradar.com/taiwansportslottery/zht/sport/2', this)">🏀 籃球賽程賽果</button>
+  <button id="tab-badminton" onclick="switchUrl('https://statshub.sportradar.com/taiwansportslottery/zht/sport/31', this)">🏸 羽球賽程賽果</button>
+  <button id="tab-tennis" onclick="switchUrl('https://statshub.sportradar.com/taiwansportslottery/zht/sport/5', this)">🎾 網球賽程賽果</button>
 </div>
 
-<!-- 主內容區 -->
 <div class="main-content">
-  <div class="container" id="matches"></div>
+  <iframe src="https://statshub.sportradar.com/taiwansportslottery/zht/sport/1" class="data-frame" id="data-frame"></iframe>
 </div>
 
 <script>
-const API_KEY = "38e75c404956249117e5e414c38951a8";
-
-const CN_DB = {
-  "Los Angeles Lakers": "洛杉磯湖人", "Golden State Warriors": "金州勇士",
-  "Boston Celtics": "波士頓塞爾提克", "Miami Heat": "邁阿密熱火",
-  "Milwaukee Bucks": "密爾瓦基公鹿", "Phoenix Suns": "鳳凰城太陽",
-  "Dallas Mavericks": "達拉斯獨行俠", "Denver Nuggets": "丹佛金塊",
-  "Brooklyn Nets": "布魯克林籃網", "Philadelphia 76ers": "費城76人",
-  "Los Angeles Clippers": "洛杉磯快艇", "Sacramento Kings": "沙加緬度國王",
-  "Los Angeles Dodgers": "洛杉磯道奇", "New York Yankees": "紐約洋基",
-  "Boston Red Sox": "波士頓紅襪", "Houston Astros": "休士頓太空人",
-  "Atlanta Braves": "亞特蘭大勇士", "San Francisco Giants": "舊金山巨人",
-  "Chicago Cubs": "芝加哥小熊", "New York Mets": "紐約大都會",
-  "San Diego Padres": "聖地牙哥教士", "Liverpool": "利物浦", 
-  "Arsenal": "阿森納", "Manchester City": "曼城", 
-  "Manchester United": "曼聯", "Chelsea": "切爾西", 
-  "Tottenham Hotspur": "熱刺", "Newcastle United": "紐卡索聯", 
-  "Aston Villa": "阿斯頓維拉"
-};
-
-function toCN(name){
-  if (!name) return "未知隊伍";
-  if (CN_DB[name]) return CN_DB[name];
-  let cleanName = name.replace(/\b(FC|United|City|Real|Hotspur|Town|Athletic|Club)\b/g, "").trim();
-  return CN_DB[cleanName] || cleanName; 
-}
-
-// 漢堡紐開合控制
 function toggleMenu() {
-  const sidebar = document.getElementById('sidebar');
-  const overlay = document.getElementById('overlay');
-  sidebar.classList.toggle('open');
-  overlay.classList.toggle('open');
+  document.getElementById('sidebar').classList.toggle('open');
+  document.getElementById('overlay').classList.toggle('open');
 }
 
-function switchSport(sport, btnElement) {
+function switchUrl(url, btnElement) {
+  // 1. 切換按鈕的選取樣式
   document.querySelectorAll('.sidebar button').forEach(b => b.classList.remove('active'));
   btnElement.classList.add('active');
   
-  // 如果在手機模式下，點擊選項後自動收合選單
+  // 2. 即時改變 Iframe 的來源網址，完成頁面切換
+  document.getElementById('data-frame').src = url;
+  
+  // 3. 手機模式下自動收回選單
   if (window.innerWidth < 992) {
     toggleMenu();
   }
-  loadSport(sport);
 }
-
-function loadSport(sport){
-  document.getElementById("matches").innerHTML = '<div class="status-msg">最新賽事賠率載入中...</div>';
-  
-  fetch(`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=us,eu,uk&markets=h2h&oddsFormat=decimal`)
-    .then(r => r.json())
-    .then(render)
-    .catch(() => {
-      document.getElementById("matches").innerHTML = '<div class="status-msg" style="color:var(--ts-red)">賽事資料讀取失敗，請確認 API 金鑰是否有效。</div>';
-    });
-}
-
-function calcEV(p, odds){ return (p * odds - 1); }
-function kelly(p, odds){ return ((p * odds - 1) / (odds - 1)); }
-
-function render(data){
-  if(!data || data.length === 0){
-    document.getElementById("matches").innerHTML = '<div class="status-msg">目前無相關開盤賽事</div>';
-    return;
-  }
-
-  data.sort((a,b) => new Date(a.commence_time) - new Date(b.commence_time));
-
-  let html = "";
-
-  data.forEach((m, idx) => {
-    if(!m.bookmakers?.length) return;
-    const market = m.bookmakers[0].markets[0];
-    if(!market) return;
-
-    const away = market.outcomes.find(x => x.name === m.away_team);
-    const home = market.outcomes.find(x => x.name === m.home_team);
-    if(!away || !home) return;
-
-    // 精確算法：計算隱含機率並「還原去抽水真實勝率」
-    const aImp = 1 / away.price;
-    const hImp = 1 / home.price;
-    const sum = aImp + hImp;
-    
-    // 還原後的精確真實勝率
-    const eloA = aImp / sum;
-    const eloH = hImp / sum;
-
-    // 計算 EV
-    const vA = calcEV(eloA, away.price);
-    const vH = calcEV(eloH, home.price);
-
-    // 依據真實演算決定推薦對象
-    let pick, pickProb, pickOdds, value, isHome = false;
-    if(eloA > eloH){
-      pick = m.away_team; pickProb = eloA; pickOdds = away.price; value = vA;
-    } else {
-      pick = m.home_team; pickProb = eloH; pickOdds = home.price; value = vH; isHome = true;
-    }
-
-    const k = kelly(pickProb, pickOdds);
-
-    let warn = "";
-    // 精確去抽水後的標準 EV 通常趨近於 0，這裡微調閥值作為合理推薦指標
-    if(value >= 0){
-      warn = `<span class="badge green">精準高回報</span>`;
-    } else if(value < -0.05){
-      warn = `<span class="badge red">高抽水盤口</span>`;
-    } else {
-      warn = `<span class="badge yellow">一般評級</span>`;
-    }
-
-    const matchNo = 100 + (idx % 900); 
-    const gameTime = new Date(m.commence_time).toLocaleString('zh-TW', {
-      month: '2-digit', day: '2-digit', hour: '2-digit', minute: '2-digit', hour12: false
-    });
-
-    html += `
-      <div class="card">
-        <div class="card-info">
-          <div><strong>賽事編號 ${matchNo}</strong> ｜ 開賽時間：${gameTime}</div>
-          <div>不讓分</div>
-        </div>
-        
-        <div class="card-body">
-          <div class="teams-zone">
-            <div class="team-display">
-              <div class="team-name">${toCN(m.away_team)}</div>
-              <div class="team-en">${m.away_team} (客)</div>
-            </div>
-            <div class="vs-label">VS</div>
-            <div class="team-display">
-              <div class="team-name">${toCN(m.home_team)}</div>
-              <div class="team-en">${m.home_team} (主)</div>
-            </div>
-          </div>
-          
-          <div class="odds-zone">
-            <div class="odds-btn">
-              <div class="label">客隊</div>
-              <div class="price">${away.price}</div>
-              <div class="prob">${(eloA*100).toFixed(1)}%</div>
-            </div>
-            <div class="odds-btn">
-              <div class="label">主隊</div>
-              <div class="price">${home.price}</div>
-              <div class="prob">${(eloH*100).toFixed(1)}%</div>
-            </div>
-          </div>
-        </div>
-
-        <div class="analysis-zone">
-          <div>🎯 AI 推薦：<strong style="color:var(--ts-red); font-size:14px;">${toCN(pick)} (${isHome?'主':'客'})</strong></div>
-          <div style="color: #64748b;">|</div>
-          <div>市場勝率 <strong> ${(pickProb*100).toFixed(1)}%</strong></div>
-          <div>精確 EV <strong>${(value*100).toFixed(2)}%</strong></div>
-          <div>凱利指數 <strong>${(k*100).toFixed(2)}%</strong></div>
-          <div style="margin-left: auto;">${warn}</div>
-        </div>
-      </div>
-    `;
-  });
-
-  document.getElementById("matches").innerHTML = html;
-}
-
-// 預設初次載入
-loadSport("tennis_atp_wimbledon");
 </script>
 
 </body>
