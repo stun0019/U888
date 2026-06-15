@@ -6,104 +6,169 @@
 <title>Sports AI 分析中心</title>
 
 <style>
-
-body{
-margin:0;
-font-family:Arial;
-background:#0f172a;
-color:white;
+:root {
+  --bg-main: #0b0f19;
+  --bg-card: #151f32;
+  --bg-box: #1e293b;
+  --primary: #3b82f6;
+  --primary-hover: #2563eb;
+  --text-main: #f8fafc;
+  --text-muted: #94a3b8;
+  --accent-green: #10b981;
+  --accent-yellow: #f59e0b;
 }
 
-header{
-background:#1e293b;
-padding:20px;
-text-align:center;
-font-size:26px;
-font-weight:bold;
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background: var(--bg-main);
+  color: var(--text-main);
+  line-height: 1.5;
 }
 
-.nav{
-display:flex;
-gap:10px;
-justify-content:center;
-flex-wrap:wrap;
-padding:15px;
+header {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  padding: 24px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  border-bottom: 1px solid #1e293b;
 }
 
-.nav button{
-padding:10px 18px;
-border:none;
-border-radius:8px;
-background:#334155;
-color:white;
-cursor:pointer;
+.nav {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  flex-wrap: wrap;
+  padding: 20px 15px;
 }
 
-.nav button:hover{
-background:#3b82f6;
+.nav button {
+  padding: 10px 20px;
+  border: 1px solid #334155;
+  border-radius: 20px;
+  background: transparent;
+  color: var(--text-muted);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
 }
 
-.container{
-max-width:1200px;
-margin:auto;
-padding:20px;
+.nav button:hover, .nav button.active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
 }
 
-.card{
-background:#1e293b;
-padding:18px;
-border-radius:12px;
-margin-bottom:12px;
+.container {
+  max-width: 800px;
+  margin: auto;
+  padding: 0 20px 40px;
 }
 
-.title{
-font-size:18px;
-font-weight:bold;
-margin-bottom:5px;
+.load {
+  margin-bottom: 24px;
+  padding: 12px;
+  width: 100%;
+  border: none;
+  border-radius: 12px;
+  background: var(--primary);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
 }
 
-.time{
-color:#94a3b8;
-font-size:14px;
-margin-bottom:10px;
+.load:hover {
+  background: var(--primary-hover);
 }
 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
+.card {
+  background: var(--bg-card);
+  padding: 20px;
+  border-radius: 16px;
+  margin-bottom: 16px;
+  border: 1px solid #22314d;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.box{
-background:#334155;
-padding:10px;
-border-radius:8px;
+.time {
+  color: var(--text-muted);
+  font-size: 13px;
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
 }
 
-.good{color:#22c55e;}
-.bad{color:#ef4444;}
-.warn{color:#facc15;}
-
-.small{
-font-size:13px;
-color:#94a3b8;
+.title {
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-button.load{
-margin-top:10px;
-padding:10px;
-width:100%;
-border:none;
-border-radius:8px;
-background:#3b82f6;
-color:white;
-cursor:pointer;
+.grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 16px;
 }
 
-button.load:hover{
-background:#2563eb;
+.box {
+  background: var(--bg-box);
+  padding: 12px;
+  border-radius: 10px;
+  text-align: center;
+  border: 1px solid #334155;
 }
 
+.box .team-label {
+  font-size: 12px;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+
+.box .odds {
+  font-size: 20px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.box .prob {
+  font-size: 13px;
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.analysis-bar {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  background: rgba(15, 23, 42, 0.6);
+  padding: 10px 14px;
+  border-radius: 10px;
+}
+
+.badge {
+  padding: 4px 8px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.badge-green { background: rgba(16, 185, 129, 0.15); color: var(--accent-green); }
+.badge-yellow { background: rgba(245, 158, 11, 0.15); color: var(--accent-yellow); }
+
+.status-msg {
+  text-align: center;
+  padding: 40px;
+  color: var(--text-muted);
+}
 </style>
 </head>
 
@@ -112,150 +177,123 @@ background:#2563eb;
 <header>Sports AI 賽事分析系統</header>
 
 <div class="nav">
-
-<button onclick="loadSport('tennis_atp_wimbledon')">🎾 網球</button>
-<button onclick="loadSport('basketball_nba')">🏀 NBA</button>
-<button onclick="loadSport('soccer_epl')">⚽ 足球</button>
-<button onclick="loadSport('baseball_mlb')">⚾ MLB</button>
-
+  <button id="btn-tennis" onclick="switchSport('tennis_atp_wimbledon', this)" class="active">🎾 網球</button>
+  <button id="btn-nba" onclick="switchSport('basketball_nba', this)">🏀 NBA</button>
+  <button id="btn-soccer" onclick="switchSport('soccer_epl', this)">⚽ 足球</button>
+  <button id="btn-baseball" onclick="switchSport('baseball_mlb', this)">⚾ MLB</button>
 </div>
 
 <div class="container">
-
-<button class="load" onclick="loadSport(currentSport)">
-載入 / 更新賽事
-</button>
-
-<div id="matches"></div>
-
+  <button class="load" onclick="loadSport(currentSport)">更新目前賽事資料</button>
+  <div id="matches"></div>
 </div>
 
 <script>
-
 const API_KEY = "38e75c404956249117e5e414c38951a8";
-
 let currentSport = "tennis_atp_wimbledon";
 
+function switchSport(sport, btnElement) {
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  btnElement.classList.add('active');
+  loadSport(sport);
+}
+
 function loadSport(sport){
+  currentSport = sport;
+  document.getElementById("matches").innerHTML = '<div class="status-msg">資料載入中...</div>';
 
-currentSport = sport;
-
-fetch(
-`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`
-)
-.then(res=>res.json())
-.then(data=>render(data))
-.catch(err=>{
-document.getElementById("matches").innerHTML =
-"API 讀取失敗";
-console.error(err);
-});
+  fetch(`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`)
+    .then(res => res.json())
+    .then(data => render(data))
+    .catch(err => {
+      document.getElementById("matches").innerHTML = '<div class="status-msg" style="color:#ef4444;">API 讀取失敗，請檢查金鑰或網路。</div>';
+      console.error(err);
+    });
 }
 
 function calc(awayOdds, homeOdds, away, home){
+  const a = 1 / awayOdds;
+  const h = 1 / homeOdds;
+  const total = a + h;
 
-const a = 1 / awayOdds;
-const h = 1 / homeOdds;
+  const awayP = (a / total) * 100;
+  const homeP = (h / total) * 100;
 
-const total = a + h;
+  // 計算相較於隱含機率的簡單估算 EV
+  let recommend, ev;
+  if(awayP > homeP){
+    recommend = away;
+    ev = ((awayP / 100) * awayOdds - 1) * 100;
+  } else {
+    recommend = home;
+    ev = ((homeP / 100) * homeOdds - 1) * 100;
+  }
 
-const awayP = (a/total)*100;
-const homeP = (h/total)*100;
-
-let recommend, ev;
-
-if(awayP > homeP){
-recommend = away;
-ev = (awayP/100 * awayOdds - 1) * 100;
-}else{
-recommend = home;
-ev = (homeP/100 * homeOdds - 1) * 100;
-}
-
-return {
-awayP: awayP.toFixed(2),
-homeP: homeP.toFixed(2),
-ev: ev.toFixed(2),
-recommend
-};
+  return {
+    awayP: awayP.toFixed(1),
+    homeP: homeP.toFixed(1),
+    ev: ev.toFixed(1),
+    recommend
+  };
 }
 
 function render(matches){
+  let html = "";
 
-let html = "";
+  if(!matches || matches.length === 0){
+    document.getElementById("matches").innerHTML = '<div class="status-msg">目前暫無賽事資料</div>';
+    return;
+  }
 
-if(!matches || matches.length === 0){
-document.getElementById("matches").innerHTML =
-"無資料";
-return;
+  matches.forEach(m => {
+    if(!m.bookmakers?.length) return;
+
+    const book = m.bookmakers[0];
+    const market = book.markets[0];
+    if(!market) return;
+
+    const away = market.outcomes.find(x => x.name === m.away_team);
+    const home = market.outcomes.find(x => x.name === m.home_team);
+    if(!away || !home) return;
+
+    const r = calc(away.price, home.price, m.away_team, m.home_team);
+
+    html += `
+      <div class="card">
+        <div class="time">🕒 ${new Date(m.commence_time).toLocaleString('zh-TW', {hour12:false})}</div>
+        <div class="title">
+          <span>${m.away_team}</span>
+          <span style="color:var(--text-muted); font-size:14px; font-weight:normal;">VS</span>
+          <span>${m.home_team}</span>
+        </div>
+        
+        <div class="grid">
+          <div class="box">
+            <div class="team-label">客隊</div>
+            <div class="odds">${away.price}</div>
+            <div class="prob">${r.awayP}%</div>
+          </div>
+          <div class="box">
+            <div class="team-label">主隊</div>
+            <div class="odds">${home.price}</div>
+            <div class="prob">${r.homeP}%</div>
+          </div>
+        </div>
+
+        <div class="analysis-bar">
+          <span class="badge badge-green">推薦</span>
+          <span style="font-size:14px; font-weight:500; flex-grow:1;">${r.recommend}</span>
+          <span class="badge badge-yellow">EV ${r.ev}%</span>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById("matches").innerHTML = html;
 }
 
-matches.forEach(m=>{
-
-if(!m.bookmakers?.length) return;
-
-const book = m.bookmakers[0];
-const market = book.markets[0];
-if(!market) return;
-
-const away = market.outcomes.find(x=>x.name===m.away_team);
-const home = market.outcomes.find(x=>x.name===m.home_team);
-if(!away || !home) return;
-
-const r = calc(
-away.price,
-home.price,
-m.away_team,
-m.home_team
-);
-
-html += `
-<div class="card">
-
-<div class="title">
-${m.away_team} vs ${m.home_team}
-</div>
-
-<div class="time">
-🕒 ${new Date(m.commence_time).toLocaleString()}
-</div>
-
-<div class="grid">
-
-<div class="box">
-客隊<br>
-${away.price}<br>
-<span class="small">${r.awayP}%</span>
-</div>
-
-<div class="box">
-主隊<br>
-${home.price}<br>
-<span class="small">${r.homeP}%</span>
-</div>
-
-</div>
-
-<br>
-
-<div class="good">
-推薦：${r.recommend}
-</div>
-
-<div class="warn">
-EV：${r.ev}%
-</div>
-
-</div>
-`;
-});
-
-document.getElementById("matches").innerHTML = html;
-
-}
-
+// 首次載入
 loadSport(currentSport);
-
 </script>
 
 </body>
