@@ -3,326 +3,92 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<title>運彩資訊平台 6.0</title>
+<title>運彩賽事表</title>
 
 <style>
-body {
-    margin: 0;
+body{
     font-family: Arial;
-    background: #0b1220;
-    color: white;
+    background:#0f172a;
+    color:white;
+    padding:20px;
 }
 
-/* header */
-header {
-    padding: 14px;
-    text-align: center;
-    background: #111827;
-    font-weight: bold;
+h1{
+    text-align:center;
 }
 
-/* progress bar */
-#progressBar {
-    height: 3px;
-    width: 0%;
-    background: #3b82f6;
-    transition: width 0.3s;
+table{
+    width:100%;
+    border-collapse:collapse;
+    margin-top:20px;
 }
 
-/* layout */
-.container {
-    max-width: 1000px;
-    margin: auto;
-    padding: 12px;
+th,td{
+    border:1px solid #334155;
+    padding:10px;
+    text-align:left;
 }
 
-/* filters */
-.filters {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-    flex-wrap: wrap;
-    margin: 10px 0;
+th{
+    background:#1e293b;
 }
 
-select {
-    padding: 6px;
-    border-radius: 6px;
-}
-
-/* card */
-.card {
-    background: #1f2937;
-    padding: 12px;
-    margin: 10px 0;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s;
-}
-
-.card:hover {
-    background: #273449;
-}
-
-/* badge */
-.score {
-    float: right;
-    background: #2563eb;
-    padding: 4px 8px;
-    border-radius: 6px;
-    font-size: 12px;
-}
-
-/* pages */
-.page {
-    display: none;
-    max-width: 700px;
-    margin: auto;
-    padding: 20px;
-}
-
-.back {
-    cursor: pointer;
-    color: #60a5fa;
-    margin-bottom: 10px;
-    display: inline-block;
-}
-
-/* loading */
-.loading {
-    text-align: center;
-    padding: 20px;
-    color: #94a3b8;
-}
-
-.error {
-    color: #ef4444;
-    text-align: center;
-    padding: 20px;
+tr:nth-child(even){
+    background:#172033;
 }
 </style>
-
 </head>
-
 <body>
 
-<header>運彩資訊平台 6.0（Loading + AI穩定版）</header>
+<h1>今日運彩賽事</h1>
 
-<div id="progressBar"></div>
-
-<div class="container">
-
-<div class="filters">
-
-<select id="sport">
-<option value="all">全部</option>
-<option value="soccer">足球</option>
-<option value="nba">NBA</option>
-<option value="mlb">MLB</option>
-</select>
-
-</div>
-
-<!-- LIST -->
-<div id="listPage">
-<div id="list"></div>
-</div>
-
-<!-- DETAIL -->
-<div id="detailPage" class="page">
-<span class="back" onclick="back()">← 返回</span>
-<div id="detail"></div>
-</div>
-
-</div>
+<table>
+    <thead>
+        <tr>
+            <th>聯盟</th>
+            <th>主隊</th>
+            <th>客隊</th>
+            <th>開賽時間</th>
+        </tr>
+    </thead>
+    <tbody id="games"></tbody>
+</table>
 
 <script>
 
-let matches = [];
+const TOKEN = "YOUR_JBOT_TOKEN";
 
-/* APIs */
-const API = {
-    soccer: "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4328",
-    nba: "https://www.thesportsdb.com/api/v1/json/3/eventsnextleague.php?id=4387",
-    mlb: "https://statsapi.mlb.com/api/v1/schedule?sportId=1"
-};
+async function loadGames(){
 
-/* progress bar */
-function setProgress(v) {
-    document.getElementById("progressBar").style.width = v + "%";
-}
+    const today = new Date().toISOString().split('T')[0];
 
-/* fetch wrapper */
-async function fetchWithProgress(url, step) {
+    const url =
+`https://api.sportsbot.tech/v2/odds?sport=FTB&date=${today}`;
 
-    setProgress(step);
+    const res = await fetch(url,{
+        headers:{
+            "X-JBot-Token":TOKEN
+        }
+    });
 
-    const res = await fetch(url);
     const data = await res.json();
 
-    setProgress(step + 30);
+    const tbody = document.getElementById("games");
 
-    return data;
+    data.forEach(game=>{
+
+        tbody.innerHTML += `
+        <tr>
+            <td>${game.league}</td>
+            <td>${game.home}</td>
+            <td>${game.away}</td>
+            <td>${game.matchTime}</td>
+        </tr>
+        `;
+    });
 }
 
-/* load all */
-async function load() {
-
-    try {
-
-        setProgress(10);
-
-        const [s, n, m] = await Promise.all([
-            fetchWithProgress(API.soccer, 20),
-            fetchWithProgress(API.nba, 50),
-            fetchWithProgress(API.mlb, 80)
-        ]);
-
-        setProgress(100);
-
-        const soccer = (s.events || []).map(e => normalize(e, "soccer"));
-        const nba = (n.events || []).map(e => normalize(e, "nba"));
-
-        const mlb = (m.dates || []).flatMap(d =>
-            d.games.map(g => ({
-                id: g.gamePk,
-                sport: "mlb",
-                league: "MLB",
-                home: g.teams.home.team.name,
-                away: g.teams.away.team.name,
-                time: g.gameDate,
-                status: g.status.detailedState.includes("Final") ? "finished" : "upcoming"
-            }))
-        );
-
-        matches = [...soccer, ...nba, ...mlb];
-
-        render();
-
-        setTimeout(() => setProgress(0), 500);
-
-    } catch (e) {
-        document.getElementById("list").innerHTML =
-            "<div class='error'>API 載入失敗</div>";
-    }
-}
-
-/* normalize */
-function normalize(e, sport) {
-    return {
-        id: e.idEvent,
-        sport,
-        league: e.strLeague,
-        home: e.strHomeTeam,
-        away: e.strAwayTeam,
-        time: e.dateEvent,
-        status: "upcoming"
-    };
-}
-
-/* AI model (stable version) */
-function ai(m) {
-
-    const base = 50;
-
-    const h = m.home.length;
-    const a = m.away.length;
-
-    let diff = (h - a) * 3;
-
-    let home = base + diff;
-    let away = 100 - home;
-
-    home = Math.max(15, Math.min(85, home));
-    away = 100 - home;
-
-    return {
-        home: Math.round(home),
-        away: Math.round(away),
-        confidence: Math.abs(home - 50)
-    };
-}
-
-/* render */
-function render() {
-
-    const list = document.getElementById("list");
-    const sport = document.getElementById("sport").value;
-
-    list.innerHTML = "<div class='loading'>整理賽事資料中...</div>";
-
-    setTimeout(() => {
-
-        const filtered = matches
-            .filter(m => sport === "all" || m.sport === sport)
-            .map(m => ({ ...m, ai: ai(m) }))
-            .sort((a, b) => b.ai.confidence - a.ai.confidence);
-
-        if (!filtered.length) {
-            list.innerHTML = "<div class='loading'>沒有資料</div>";
-            return;
-        }
-
-        list.innerHTML = "";
-
-        filtered.forEach(m => {
-
-            const div = document.createElement("div");
-            div.className = "card";
-
-            div.onclick = () => openDetail(m);
-
-            div.innerHTML = `
-                <div>
-                    ${m.league}
-                    <span class="score">${m.ai.home}%</span>
-                </div>
-                <div>${m.home} vs ${m.away}</div>
-                <div style="font-size:12px;color:#94a3b8">${m.time}</div>
-            `;
-
-            list.appendChild(div);
-        });
-
-    }, 400);
-}
-
-/* detail */
-function openDetail(m) {
-
-    const ai = m.ai;
-
-    document.getElementById("listPage").style.display = "none";
-    document.getElementById("detailPage").style.display = "block";
-
-    document.getElementById("detail").innerHTML = `
-        <h2>${m.home} vs ${m.away}</h2>
-        <p>${m.league}</p>
-
-        <div style="background:#0f172a;padding:10px;border-radius:8px;">
-            🤖 AI分析<br><br>
-            主隊勝率：${ai.home}%<br>
-            客隊勝率：${ai.away}%<br>
-            信心值：${ai.confidence}
-        </div>
-
-        <p>時間：${m.time}</p>
-    `;
-
-    history.pushState({}, "", "#match-" + m.id);
-}
-
-/* back */
-function back() {
-    document.getElementById("listPage").style.display = "block";
-    document.getElementById("detailPage").style.display = "none";
-}
-
-/* init */
-document.getElementById("sport").onchange = render;
-
-load();
+loadGames();
 
 </script>
 
