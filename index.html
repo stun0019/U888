@@ -1,96 +1,60 @@
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>運彩賽事表</title>
-
-<style>
-body{
-    font-family: Arial;
-    background:#0f172a;
-    color:white;
-    padding:20px;
-}
-
-h1{
-    text-align:center;
-}
-
-table{
-    width:100%;
-    border-collapse:collapse;
-    margin-top:20px;
-}
-
-th,td{
-    border:1px solid #334155;
-    padding:10px;
-    text-align:left;
-}
-
-th{
-    background:#1e293b;
-}
-
-tr:nth-child(even){
-    background:#172033;
-}
-</style>
+    <meta charset="UTF-8">
+    <title>全球今日賽事</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f4f4f9; }
+        .match-card { background: white; padding: 15px; margin: 10px 0; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .league { color: #888; font-size: 0.9em; }
+        .teams { font-size: 1.2em; font-weight: bold; margin: 5px 0; }
+    </style>
 </head>
 <body>
 
-<h1>今日運彩賽事</h1>
+    <h2>🌍 今日全球運動賽事表</h2>
+    <div id="loading">正在載入賽事資料...</div>
+    <div id="events-list"></div>
 
-<table>
-    <thead>
-        <tr>
-            <th>聯盟</th>
-            <th>主隊</th>
-            <th>客隊</th>
-            <th>開賽時間</th>
-        </tr>
-    </thead>
-    <tbody id="games"></tbody>
-</table>
+    <script>
+        // 網頁開啟時自動執行
+        window.onload = function() {
+            fetchGlobalEvents();
+        };
 
-<script>
+        async function fetchGlobalEvents() {
+            // 使用 TheSportsDB 的免費測試 Key (1)，獲取當天主要賽事
+            const apiUrl = 'https://www.thesportsdb.com/api/v1/json/1/latestedits.php'; 
+            
+            try {
+                const response = await fetch(apiUrl);
+                const data = await response.json();
+                
+                document.getElementById('loading').style.display = 'none';
+                const listDiv = document.getElementById('events-list');
 
-const TOKEN = "YOUR_JBOT_TOKEN";
-
-async function loadGames(){
-
-    const today = new Date().toISOString().split('T')[0];
-
-    const url =
-`https://api.sportsbot.tech/v2/odds?sport=FTB&date=${today}`;
-
-    const res = await fetch(url,{
-        headers:{
-            "X-JBot-Token":TOKEN
+                if (data.edits && data.edits.length > 0) {
+                    data.edits.forEach(item => {
+                        // 僅抓取有賽事名稱的資料
+                        if(item.strEvent) {
+                            const card = document.createElement('div');
+                            card.className = 'match-card';
+                            card.innerHTML = `
+                                <div class="league">🏆 賽事類型：${item.strSport || '未分類'}</div>
+                                <div class="teams">📌 ${item.strEvent}</div>
+                                <div class="league">更新時間：${item.dateModified || '無'}</div>
+                            `;
+                            listDiv.appendChild(card);
+                        }
+                    });
+                } else {
+                    listDiv.innerHTML = '目前沒有即時賽事資料。';
+                }
+            } catch (error) {
+                document.getElementById('loading').innerText = '資料抓取失敗，請檢查網路或 API 狀態。';
+                console.error('Error:', error);
+            }
         }
-    });
-
-    const data = await res.json();
-
-    const tbody = document.getElementById("games");
-
-    data.forEach(game=>{
-
-        tbody.innerHTML += `
-        <tr>
-            <td>${game.league}</td>
-            <td>${game.home}</td>
-            <td>${game.away}</td>
-            <td>${game.matchTime}</td>
-        </tr>
-        `;
-    });
-}
-
-loadGames();
-
-</script>
-
+    </script>
 </body>
 </html>
