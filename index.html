@@ -1,0 +1,187 @@
+const API_KEY = "38e75c404956249117e5e414c38951a8";
+
+async function loadMatches(){
+
+    const sport =
+    document.getElementById("sportSelect").value;
+
+    document.getElementById("loading")
+    .style.display = "block";
+
+    try{
+
+        const url =
+        `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
+
+        const response = await fetch(url);
+
+        const data = await response.json();
+
+        renderMatches(data);
+
+    }
+    catch(error){
+
+        console.error(error);
+
+        document.getElementById("matches")
+        .innerHTML =
+        "<h2>資料讀取失敗</h2>";
+    }
+
+    document.getElementById("loading")
+    .style.display = "none";
+}
+
+function renderMatches(matches){
+
+    let html = "";
+
+    matches.forEach(match=>{
+
+        if(!match.bookmakers?.length)
+            return;
+
+        const bookmaker =
+        match.bookmakers[0];
+
+        const market =
+        bookmaker.markets[0];
+
+        const away =
+        market.outcomes.find(
+        x=>x.name===match.away_team);
+
+        const home =
+        market.outcomes.find(
+        x=>x.name===match.home_team);
+
+        if(!away || !home)
+            return;
+
+        const awayOdds = away.price;
+        const homeOdds = home.price;
+
+        const analysis =
+        calculateEV(
+            awayOdds,
+            homeOdds,
+            match.away_team,
+            match.home_team
+        );
+
+        html += `
+        <div class="card">
+
+            <h2>
+            ${match.away_team}
+            VS
+            ${match.home_team}
+            </h2>
+
+            <p>
+            ${new Date(
+                match.commence_time
+            ).toLocaleString()}
+            </p>
+
+            <hr>
+
+            <p>
+            客隊賠率：
+            ${awayOdds}
+            </p>
+
+            <p>
+            主隊賠率：
+            ${homeOdds}
+            </p>
+
+            <p>
+            客勝率：
+            ${analysis.awayProb}%
+            </p>
+
+            <p>
+            主勝率：
+            ${analysis.homeProb}%
+            </p>
+
+            <p class="win">
+            推薦：
+            ${analysis.recommend}
+            </p>
+
+            <p class="ev">
+            EV：
+            ${analysis.ev}%
+            </p>
+
+        </div>
+        `;
+    });
+
+    document.getElementById("matches")
+    .innerHTML = html;
+}
+
+function calculateEV(
+    awayOdds,
+    homeOdds,
+    awayTeam,
+    homeTeam
+){
+
+    const awayImp =
+    (1 / awayOdds);
+
+    const homeImp =
+    (1 / homeOdds);
+
+    const total =
+    awayImp + homeImp;
+
+    const awayProb =
+    (awayImp / total) * 100;
+
+    const homeProb =
+    (homeImp / total) * 100;
+
+    let recommend;
+    let ev;
+
+    if(awayProb > homeProb){
+
+        recommend = awayTeam;
+
+        ev =
+        ((awayProb/100)
+        * awayOdds
+        -1) *100;
+    }
+    else{
+
+        recommend = homeTeam;
+
+        ev =
+        ((homeProb/100)
+        * homeOdds
+        -1) *100;
+    }
+
+    return{
+
+        awayProb:
+        awayProb.toFixed(2),
+
+        homeProb:
+        homeProb.toFixed(2),
+
+        ev:
+        ev.toFixed(2),
+
+        recommend
+    };
+}
+
+loadMatches();
