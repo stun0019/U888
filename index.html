@@ -3,141 +3,105 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>AI 賽事分析系統 v1.0</title>
+<title>Sports AI 分析中心</title>
 
 <style>
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing:border-box;
-}
-
 body{
-    font-family:Arial,sans-serif;
-    background:#0f172a;
-    color:white;
+margin:0;
+font-family:Arial;
+background:#0f172a;
+color:white;
 }
 
 header{
-    background:#1e293b;
-    padding:20px;
-    text-align:center;
-    box-shadow:0 2px 10px rgba(0,0,0,.3);
+background:#1e293b;
+padding:20px;
+text-align:center;
+font-size:26px;
+font-weight:bold;
 }
 
-h1{
-    margin-bottom:15px;
+.nav{
+display:flex;
+gap:10px;
+justify-content:center;
+flex-wrap:wrap;
+padding:15px;
 }
 
-.controls{
-    display:flex;
-    gap:10px;
-    justify-content:center;
-    flex-wrap:wrap;
+.nav button{
+padding:10px 18px;
+border:none;
+border-radius:8px;
+background:#334155;
+color:white;
+cursor:pointer;
 }
 
-select,
-button{
-    padding:12px;
-    border:none;
-    border-radius:8px;
-}
-
-button{
-    background:#3b82f6;
-    color:white;
-    cursor:pointer;
-}
-
-button:hover{
-    background:#2563eb;
+.nav button:hover{
+background:#3b82f6;
 }
 
 .container{
-    max-width:1400px;
-    margin:auto;
-    padding:20px;
-}
-
-.loading{
-    display:none;
-    text-align:center;
-    font-size:18px;
-    margin-top:20px;
-}
-
-.stats{
-    display:grid;
-    grid-template-columns:repeat(auto-fit,minmax(200px,1fr));
-    gap:15px;
-    margin-bottom:20px;
-}
-
-.stat-card{
-    background:#1e293b;
-    padding:15px;
-    border-radius:12px;
-    text-align:center;
+max-width:1200px;
+margin:auto;
+padding:20px;
 }
 
 .card{
-    background:#1e293b;
-    padding:20px;
-    border-radius:15px;
-    margin-bottom:15px;
+background:#1e293b;
+padding:18px;
+border-radius:12px;
+margin-bottom:12px;
 }
 
-.match-title{
-    font-size:22px;
-    font-weight:bold;
-    margin-bottom:10px;
+.title{
+font-size:18px;
+font-weight:bold;
+margin-bottom:5px;
 }
 
 .time{
-    color:#94a3b8;
-    margin-bottom:15px;
+color:#94a3b8;
+font-size:14px;
+margin-bottom:10px;
 }
 
-.odds-grid{
-    display:grid;
-    grid-template-columns:1fr 1fr;
-    gap:15px;
-    margin-top:15px;
+.grid{
+display:grid;
+grid-template-columns:1fr 1fr;
+gap:10px;
 }
 
 .box{
-    background:#334155;
-    padding:15px;
-    border-radius:10px;
+background:#334155;
+padding:10px;
+border-radius:8px;
 }
 
-.recommend{
-    color:#22c55e;
-    font-size:18px;
-    font-weight:bold;
+.good{color:#22c55e;}
+.bad{color:#ef4444;}
+.warn{color:#facc15;}
+
+.small{
+font-size:13px;
+color:#94a3b8;
 }
 
-.warning{
-    color:#ef4444;
+button.load{
+margin-top:10px;
+padding:10px;
+width:100%;
+border:none;
+border-radius:8px;
+background:#3b82f6;
+color:white;
+cursor:pointer;
 }
 
-.ev{
-    color:#facc15;
-}
-
-.good{
-    color:#22c55e;
-}
-
-.bad{
-    color:#ef4444;
-}
-
-.footer{
-    text-align:center;
-    margin-top:30px;
-    color:#94a3b8;
+button.load:hover{
+background:#2563eb;
 }
 
 </style>
@@ -145,346 +109,152 @@ button:hover{
 
 <body>
 
-<header>
+<header>Sports AI 賽事分析系統</header>
 
-    <h1>AI 賽事分析系統</h1>
+<div class="nav">
 
-    <div class="controls">
-
-        <select id="sport">
-
-            <option value="upcoming">
-                全部賽事
-            </option>
-
-            <option value="basketball_nba">
-                NBA
-            </option>
-
-            <option value="baseball_mlb">
-                MLB
-            </option>
-
-            <option value="soccer_epl">
-                英超
-            </option>
-
-            <option value="soccer_uefa_champs_league">
-                歐冠
-            </option>
-
-            <option value="tennis_atp_wimbledon">
-                ATP 網球
-            </option>
-
-        </select>
-
-        <button onclick="loadMatches()">
-            載入賽事
-        </button>
-
-    </div>
-
-</header>
-
-<div class="container">
-
-    <div class="stats">
-
-        <div class="stat-card">
-            <h2 id="matchCount">0</h2>
-            <p>賽事數量</p>
-        </div>
-
-        <div class="stat-card">
-            <h2 id="goodBet">0</h2>
-            <p>推薦投注</p>
-        </div>
-
-    </div>
-
-    <div id="loading" class="loading">
-        讀取即時賽事中...
-    </div>
-
-    <div id="matches"></div>
+<button onclick="loadSport('tennis_atp_wimbledon')">🎾 網球</button>
+<button onclick="loadSport('basketball_nba')">🏀 NBA</button>
+<button onclick="loadSport('soccer_epl')">⚽ 足球</button>
+<button onclick="loadSport('baseball_mlb')">⚾ MLB</button>
 
 </div>
 
-<div class="footer">
-    Powered by The Odds API
+<div class="container">
+
+<button class="load" onclick="loadSport(currentSport)">
+載入 / 更新賽事
+</button>
+
+<div id="matches"></div>
+
 </div>
 
 <script>
 
 const API_KEY = "38e75c404956249117e5e414c38951a8";
 
-async function loadMatches(){
+let currentSport = "tennis_atp_wimbledon";
 
-    const sport =
-    document.getElementById("sport").value;
+function loadSport(sport){
 
-    document.getElementById("loading")
-    .style.display = "block";
+currentSport = sport;
 
-    document.getElementById("matches")
-    .innerHTML = "";
-
-    try{
-
-        let endpoint;
-
-        if(sport === "upcoming"){
-
-            endpoint =
-            `https://api.the-odds-api.com/v4/sports/upcoming/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
-
-        }else{
-
-            endpoint =
-            `https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`;
-        }
-
-        const response =
-        await fetch(endpoint);
-
-        const data =
-        await response.json();
-
-        renderMatches(data);
-
-    }catch(error){
-
-        console.error(error);
-
-        document.getElementById("matches")
-        .innerHTML =
-        "<h2>API讀取失敗</h2>";
-
-    }
-
-    document.getElementById("loading")
-    .style.display = "none";
+fetch(
+`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=eu&markets=h2h&oddsFormat=decimal`
+)
+.then(res=>res.json())
+.then(data=>render(data))
+.catch(err=>{
+document.getElementById("matches").innerHTML =
+"API 讀取失敗";
+console.error(err);
+});
 }
 
-function calculateAnalysis(
-    awayOdds,
-    homeOdds,
-    awayTeam,
-    homeTeam
-){
+function calc(awayOdds, homeOdds, away, home){
 
-    const awayImp = 1 / awayOdds;
-    const homeImp = 1 / homeOdds;
+const a = 1 / awayOdds;
+const h = 1 / homeOdds;
 
-    const total =
-    awayImp + homeImp;
+const total = a + h;
 
-    const awayProb =
-    (awayImp / total) * 100;
+const awayP = (a/total)*100;
+const homeP = (h/total)*100;
 
-    const homeProb =
-    (homeImp / total) * 100;
+let recommend, ev;
 
-    let recommend;
-    let confidence;
-    let ev;
-
-    if(awayProb > homeProb){
-
-        recommend = awayTeam;
-
-        confidence =
-        awayProb - homeProb;
-
-        ev =
-        (
-            (awayProb/100)
-            * awayOdds
-            -1
-        )*100;
-
-    }else{
-
-        recommend = homeTeam;
-
-        confidence =
-        homeProb - awayProb;
-
-        ev =
-        (
-            (homeProb/100)
-            * homeOdds
-            -1
-        )*100;
-    }
-
-    return{
-
-        awayProb:
-        awayProb.toFixed(2),
-
-        homeProb:
-        homeProb.toFixed(2),
-
-        confidence:
-        confidence.toFixed(2),
-
-        ev:
-        ev.toFixed(2),
-
-        recommend
-    };
+if(awayP > homeP){
+recommend = away;
+ev = (awayP/100 * awayOdds - 1) * 100;
+}else{
+recommend = home;
+ev = (homeP/100 * homeOdds - 1) * 100;
 }
 
-function renderMatches(matches){
-
-    let html = "";
-
-    let recommendCount = 0;
-
-    matches.forEach(match=>{
-
-        if(
-            !match.bookmakers ||
-            match.bookmakers.length === 0
-        ){
-            return;
-        }
-
-        const market =
-        match.bookmakers[0]
-        .markets[0];
-
-        if(!market) return;
-
-        const away =
-        market.outcomes.find(
-            o => o.name === match.away_team
-        );
-
-        const home =
-        market.outcomes.find(
-            o => o.name === match.home_team
-        );
-
-        if(!away || !home)
-            return;
-
-        const analysis =
-        calculateAnalysis(
-            away.price,
-            home.price,
-            match.away_team,
-            match.home_team
-        );
-
-        if(
-            analysis.confidence >= 5
-        ){
-            recommendCount++;
-        }
-
-        html += `
-
-        <div class="card">
-
-            <div class="match-title">
-                ${match.away_team}
-                VS
-                ${match.home_team}
-            </div>
-
-            <div class="time">
-                ${new Date(
-                    match.commence_time
-                ).toLocaleString()}
-            </div>
-
-            <div class="odds-grid">
-
-                <div class="box">
-
-                    <h3>
-                        客隊
-                    </h3>
-
-                    <p>
-                        ${match.away_team}
-                    </p>
-
-                    <p>
-                        賠率:
-                        ${away.price}
-                    </p>
-
-                    <p>
-                        勝率:
-                        ${analysis.awayProb}%
-                    </p>
-
-                </div>
-
-                <div class="box">
-
-                    <h3>
-                        主隊
-                    </h3>
-
-                    <p>
-                        ${match.home_team}
-                    </p>
-
-                    <p>
-                        賠率:
-                        ${home.price}
-                    </p>
-
-                    <p>
-                        勝率:
-                        ${analysis.homeProb}%
-                    </p>
-
-                </div>
-
-            </div>
-
-            <br>
-
-            <div class="recommend">
-                推薦投注：
-                ${analysis.recommend}
-            </div>
-
-            <p>
-                信心值：
-                ${analysis.confidence}%
-            </p>
-
-            <p class="ev">
-                EV：
-                ${analysis.ev}%
-            </p>
-
-        </div>
-
-        `;
-    });
-
-    document.getElementById(
-        "matches"
-    ).innerHTML = html;
-
-    document.getElementById(
-        "matchCount"
-    ).innerText = matches.length;
-
-    document.getElementById(
-        "goodBet"
-    ).innerText = recommendCount;
+return {
+awayP: awayP.toFixed(2),
+homeP: homeP.toFixed(2),
+ev: ev.toFixed(2),
+recommend
+};
 }
 
-loadMatches();
+function render(matches){
+
+let html = "";
+
+if(!matches || matches.length === 0){
+document.getElementById("matches").innerHTML =
+"無資料";
+return;
+}
+
+matches.forEach(m=>{
+
+if(!m.bookmakers?.length) return;
+
+const book = m.bookmakers[0];
+const market = book.markets[0];
+if(!market) return;
+
+const away = market.outcomes.find(x=>x.name===m.away_team);
+const home = market.outcomes.find(x=>x.name===m.home_team);
+if(!away || !home) return;
+
+const r = calc(
+away.price,
+home.price,
+m.away_team,
+m.home_team
+);
+
+html += `
+<div class="card">
+
+<div class="title">
+${m.away_team} vs ${m.home_team}
+</div>
+
+<div class="time">
+🕒 ${new Date(m.commence_time).toLocaleString()}
+</div>
+
+<div class="grid">
+
+<div class="box">
+客隊<br>
+${away.price}<br>
+<span class="small">${r.awayP}%</span>
+</div>
+
+<div class="box">
+主隊<br>
+${home.price}<br>
+<span class="small">${r.homeP}%</span>
+</div>
+
+</div>
+
+<br>
+
+<div class="good">
+推薦：${r.recommend}
+</div>
+
+<div class="warn">
+EV：${r.ev}%
+</div>
+
+</div>
+`;
+});
+
+document.getElementById("matches").innerHTML = html;
+
+}
+
+loadSport(currentSport);
 
 </script>
 
