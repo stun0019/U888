@@ -3,290 +3,358 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Sports AI v4</title>
+<title>Sports AI v4 - 台彩風格版</title>
 
 <style>
-body{
-margin:0;
-font-family:Arial;
-background:#0f172a;
-color:white;
+:root {
+  --ts-yellow: #ffcc00; /* 台彩招牌黃 */
+  --ts-red: #de2128;    /* 台彩招牌紅 */
+  --ts-blue: #1e3a8a;   /* 運動彩券深藍 */
+  --bg-light: #f4f6f9;
+  --text-dark: #1e293b;
+  --border-color: #cbd5e1;
 }
 
-header{
-padding:20px;
-text-align:center;
-background:#1e293b;
-font-size:22px;
-font-weight:bold;
+body {
+  margin: 0;
+  font-family: "PingFang TC", "Microsoft JhengHei", sans-serif;
+  background: var(--bg-light);
+  color: var(--text-dark);
 }
 
-.nav{
-display:flex;
-gap:10px;
-justify-content:center;
-flex-wrap:wrap;
-padding:15px;
+header {
+  background: var(--ts-red);
+  color: white;
+  padding: 16px;
+  text-align: center;
+  font-size: 20px;
+  font-weight: bold;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
-.nav button{
-padding:10px 16px;
-border:none;
-border-radius:8px;
-background:#334155;
-color:white;
-cursor:pointer;
+/* 經典台彩黃色導覽列 */
+.nav {
+  display: flex;
+  background: var(--ts-yellow);
+  padding: 4px;
+  justify-content: center;
+  gap: 4px;
+  border-bottom: 2px solid #eab308;
 }
 
-.nav button:hover{
-background:#3b82f6;
+.nav button {
+  padding: 10px 20px;
+  border: none;
+  background: transparent;
+  color: #334155;
+  font-weight: bold;
+  font-size: 15px;
+  cursor: pointer;
+  transition: all 0.2s;
 }
 
-.container{
-max-width:1100px;
-margin:auto;
-padding:20px;
+.nav button:hover, .nav button.active {
+  background: white;
+  color: var(--ts-red);
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-.card{
-background:#1e293b;
-padding:16px;
-border-radius:12px;
-margin-bottom:12px;
+.container {
+  max-width: 900px;
+  margin: auto;
+  padding: 16px;
 }
 
-.title{
-font-weight:bold;
-font-size:18px;
-display:flex;
-justify-content:space-between;
+/* 類似運彩投注單/看板的卡片 */
+.card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.02);
 }
 
-.sub{
-font-size:12px;
-color:#94a3b8;
+/* 卡片頂部資訊列 */
+.card-info {
+  background: #f8fafc;
+  padding: 8px 16px;
+  font-size: 13px;
+  color: #64748b;
+  border-bottom: 1px solid #f1f5f9;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.grid{
-display:grid;
-grid-template-columns:1fr 1fr;
-gap:10px;
-margin-top:10px;
+/* 隊伍與賠率對照區塊 */
+.card-body {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
 }
 
-.box{
-background:#334155;
-padding:10px;
-border-radius:8px;
-text-align:center;
+@media (min-width: 600px) {
+  .card-body {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
 }
 
-.badge{
-padding:4px 8px;
-border-radius:6px;
-font-size:12px;
-font-weight:bold;
+.teams-zone {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
 }
 
-.green{background:#14532d;color:#22c55e;}
-.yellow{background:#422006;color:#facc15;}
-.red{background:#450a0a;color:#ef4444;}
+.team-display {
+  flex: 1;
+  text-align: center;
+}
+
+.team-name {
+  font-size: 18px;
+  font-weight: bold;
+  color: #0f172a;
+}
+
+.team-en {
+  font-size: 12px;
+  color: #94a3b8;
+}
+
+.vs-label {
+  font-weight: 800;
+  color: #94a3b8;
+  font-style: italic;
+  padding: 0 10px;
+}
+
+/* 仿台彩賠率按鈕 */
+.odds-zone {
+  display: flex;
+  gap: 8px;
+}
+
+.odds-btn {
+  background: #f1f5f9;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  padding: 8px 16px;
+  text-align: center;
+  min-width: 90px;
+  cursor: default;
+}
+
+.odds-btn .label {
+  font-size: 11px;
+  color: #64748b;
+  margin-bottom: 2px;
+}
+
+.odds-btn .price {
+  font-size: 18px;
+  font-weight: bold;
+  color: var(--ts-blue);
+}
+
+.odds-btn .prob {
+  font-size: 11px;
+  color: #94a3b8;
+}
+
+/* AI預測與數據分析列 */
+.analysis-zone {
+  background: #fffbeb;
+  border-top: 1px dashed #fde68a;
+  padding: 12px 16px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  font-size: 13px;
+}
+
+.badge {
+  padding: 3px 8px;
+  border-radius: 4px;
+  font-size: 12px;
+  font-weight: bold;
+}
+
+.badge.green { background: #dcfce7; color: #15803d; border: 1px solid #bbf7d0; }
+.badge.yellow { background: #fef9c3; color: #a16207; border: 1px solid #fef08a; }
+.badge.red { background: #fee2e2; color: #b91c1c; border: 1px solid #fecaca; }
+
+.status-msg {
+  text-align: center;
+  padding: 40px;
+  color: #64748b;
+  font-size: 16px;
+}
 </style>
 </head>
 
 <body>
 
-<header>Sports AI v4（ELO + Value + Kelly）</header>
+<header>Sports AI 運彩特種分析系統 (v4)</header>
 
 <div class="nav">
-<button onclick="loadSport('tennis_atp_wimbledon')">🎾 網球</button>
-<button onclick="loadSport('basketball_nba')">🏀 NBA</button>
-<button onclick="loadSport('soccer_epl')">⚽ 足球</button>
-<button onclick="loadSport('baseball_mlb')">⚾ MLB</button>
+  <button id="tab-tennis" onclick="switchSport('tennis_atp_wimbledon', this)" class="active">網球</button>
+  <button id="tab-nba" onclick="switchSport('basketball_nba', this)">NBA 籃球</button>
+  <button id="tab-soccer" onclick="switchSport('soccer_epl', this)">英超 足球</button>
+  <button id="tab-baseball" onclick="switchSport('baseball_mlb', this)">MLB 棒球</button>
 </div>
 
 <div class="container" id="matches"></div>
 
 <script>
-
 const API_KEY = "38e75c404956249117e5e414c38951a8";
 
-/* --- 簡化 ELO（示意模型） --- */
-const ELO = {
-"defaultA": 1500,
-"defaultB": 1500
-};
-
-/* 中文對照 */
 const CN = {
-"Lakers":"湖人",
-"Warriors":"勇士",
-"Yankees":"洋基",
-"Red Sox":"紅襪",
-"Liverpool":"利物浦",
-"Arsenal":"阿森納"
+  "Lakers":"洛杉磯湖人", "Warriors":"金州勇士",
+  "Yankees":"紐約洋基", "Red Sox":"波士頓紅襪",
+  "Liverpool":"利物浦", "Arsenal":"阿森納"
 };
 
 function toCN(name){
-return CN[name] || "";
+  return CN[name] || name;
 }
 
-/* ELO勝率 */
 function eloProb(ra, rb){
-return 1 / (1 + Math.pow(10, (rb - ra)/400));
+  return 1 / (1 + Math.pow(10, (rb - ra)/400));
+}
+
+function switchSport(sport, btnElement) {
+  document.querySelectorAll('.nav button').forEach(b => b.classList.remove('active'));
+  btnElement.classList.add('active');
+  loadSport(sport);
 }
 
 function loadSport(sport){
-
-fetch(
-`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=us,eu,uk&markets=h2h&oddsFormat=decimal`
-)
-.then(r=>r.json())
-.then(render);
+  document.getElementById("matches").innerHTML = '<div class="status-msg">最新賽事賠率載入中...</div>';
+  
+  fetch(`https://api.the-odds-api.com/v4/sports/${sport}/odds/?apiKey=${API_KEY}&regions=us,eu,uk&markets=h2h&oddsFormat=decimal`)
+    .then(r => r.json())
+    .then(render)
+    .catch(() => {
+      document.getElementById("matches").innerHTML = '<div class="status-msg" style="color:var(--ts-red)">賽事資料讀取失敗。</div>';
+    });
 }
 
-/* EV */
-function calcEV(p, odds){
-return (p * odds - 1);
-}
-
-/* Kelly */
-function kelly(p, odds){
-return ((p * odds - 1) / (odds - 1));
-}
+function calcEV(p, odds){ return (p * odds - 1); }
+function kelly(p, odds){ return ((p * odds - 1) / (odds - 1)); }
 
 function render(data){
+  if(!data || data.length === 0){
+    document.getElementById("matches").innerHTML = '<div class="status-msg">目前無相關開盤賽事</div>';
+    return;
+  }
 
-if(!data || data.length === 0){
-document.getElementById("matches").innerHTML = "無資料";
-return;
+  data.sort((a,b) => new Date(a.commence_time) - new Date(b.commence_time));
+
+  let html = "";
+
+  data.forEach((m, idx) => {
+    if(!m.bookmakers?.length) return;
+    const market = m.bookmakers[0].markets[0];
+    if(!market) return;
+
+    const away = market.outcomes.find(x => x.name === m.away_team);
+    const home = market.outcomes.find(x => x.name === m.home_team);
+    if(!away || !home) return;
+
+    const aImp = 1/away.price;
+    const hImp = 1/home.price;
+    const sum = aImp + hImp;
+    const aP = aImp/sum;
+    const hP = hImp/sum;
+
+    const ra = 1500 + Math.random()*100;
+    const rb = 1500 + Math.random()*100;
+    const eloA = eloProb(ra, rb);
+    const eloH = 1 - eloA;
+
+    const vA = calcEV(eloA, away.price);
+    const vH = calcEV(eloH, home.price);
+
+    let pick, pickProb, pickOdds, value, isHome = false;
+    if(vA > vH){
+      pick = m.away_team; pickProb = eloA; pickOdds = away.price; value = vA;
+    } else {
+      pick = m.home_team; pickProb = eloH; pickOdds = home.price; value = vH; isHome = true;
+    }
+
+    const k = kelly(pickProb, pickOdds);
+
+    let warn = "";
+    if(value > 0.05){
+      warn = `<span class="badge green">Value Bet</span>`;
+    } else if(value < 0){
+      warn = `<span class="badge red">負期望值</span>`;
+    } else {
+      warn = `<span class="badge yellow">一般評級</span>`;
+    }
+
+    // 模擬台彩賽事編號
+    const matchNo = 100 + (idx % 900); 
+
+    html += `
+      <div class="card">
+        <div class="card-info">
+          <div><strong>賽事編號 ${matchNo}</strong> ｜ 開賽時間：${new Date(m.commence_time).toLocaleString('zh-TW', {hour12:false})}</div>
+          <div>不讓分</div>
+        </div>
+        
+        <div class="card-body">
+          <div class="teams-zone">
+            <div class="team-display">
+              <div class="team-name">${toCN(m.away_team)}</div>
+              <div class="team-en">${m.away_team} (客)</div>
+            </div>
+            <div class="vs-label">VS</div>
+            <div class="team-display">
+              <div class="team-name">${toCN(m.home_team)}</div>
+              <div class="team-en">${m.home_team} (主)</div>
+            </div>
+          </div>
+          
+          <div class="odds-zone">
+            <div class="odds-btn">
+              <div class="label">客隊</div>
+              <div class="price">${away.price}</div>
+              <div class="prob">${(aP*100).toFixed(1)}%</div>
+            </div>
+            <div class="odds-btn">
+              <div class="label">主隊</div>
+              <div class="price">${home.price}</div>
+              <div class="prob">${(hP*100).toFixed(1)}%</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="analysis-zone">
+          <div>🎯 AI 推薦：<strong style="color:var(--ts-red); font-size:14px;">${toCN(pick)} (${isHome?'主':'客'})</strong></div>
+          <div style="color: #64748b;">|</div>
+          <div>ELO勝率 <strong> ${(pickProb*100).toFixed(1)}%</strong></div>
+          <div>EV <strong>${(value*100).toFixed(2)}%</strong></div>
+          <div>凱利指數 <strong>${(k*100).toFixed(2)}%</strong></div>
+          <div style="margin-left: auto;">${warn}</div>
+        </div>
+      </div>
+    `;
+  });
+
+  document.getElementById("matches").innerHTML = html;
 }
 
-/* 排序 */
-data.sort((a,b)=>
-new Date(a.commence_time) - new Date(b.commence_time)
-);
-
-let html = "";
-
-data.forEach(m=>{
-
-if(!m.bookmakers?.length) return;
-
-const market = m.bookmakers[0].markets[0];
-if(!market) return;
-
-const away = market.outcomes.find(x=>x.name===m.away_team);
-const home = market.outcomes.find(x=>x.name===m.home_team);
-if(!away || !home) return;
-
-/* 隱含勝率 */
-const aImp = 1/away.price;
-const hImp = 1/home.price;
-const sum = aImp + hImp;
-
-const aP = aImp/sum;
-const hP = hImp/sum;
-
-/* 假 ELO */
-const ra = 1500 + Math.random()*100;
-const rb = 1500 + Math.random()*100;
-
-const eloA = eloProb(ra, rb);
-const eloH = 1 - eloA;
-
-/* Value */
-const vA = calcEV(eloA, away.price);
-const vH = calcEV(eloH, home.price);
-
-/* 判斷推薦 */
-let pick, pickProb, pickOdds, value;
-
-if(vA > vH){
-pick = m.away_team;
-pickProb = eloA;
-pickOdds = away.price;
-value = vA;
-}else{
-pick = m.home_team;
-pickProb = eloH;
-pickOdds = home.price;
-value = vH;
-}
-
-/* Kelly */
-const k = kelly(pickProb, pickOdds);
-
-/* 冷門警告 */
-let warn = "";
-if(value > 0.05){
-warn = `<span class="badge green">Value Bet</span>`;
-}else if(value < 0){
-warn = `<span class="badge red">負期望</span>`;
-}else{
-warn = `<span class="badge yellow">一般</span>`;
-}
-
-html += `
-<div class="card">
-
-<div class="title">
-<div>
-${m.away_team}
-<div class="sub">${toCN(m.away_team)}</div>
-</div>
-
-<div>VS</div>
-
-<div>
-${m.home_team}
-<div class="sub">${toCN(m.home_team)}</div>
-</div>
-</div>
-
-<div class="sub">
-🕒 ${new Date(m.commence_time).toLocaleString()}
-</div>
-
-<div class="grid">
-
-<div class="box">
-客隊<br>${away.price}<br>${(aP*100).toFixed(1)}%
-</div>
-
-<div class="box">
-主隊<br>${home.price}<br>${(hP*100).toFixed(1)}%
-</div>
-
-</div>
-
-<br>
-
-<div>
-🎯 推薦：<b>${pick}</b>
-</div>
-
-<div class="sub">
-ELO勝率 ${(pickProb*100).toFixed(1)}% ｜ EV ${(value*100).toFixed(2)}%
-</div>
-
-<div class="sub">
-Kelly ${(k*100).toFixed(2)}%
-</div>
-
-<div style="margin-top:8px;">
-${warn}
-</div>
-
-</div>
-`;
-});
-
-document.getElementById("matches").innerHTML = html;
-}
-
+// 預設載入
 loadSport("tennis_atp_wimbledon");
-
 </script>
 
 </body>
