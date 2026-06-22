@@ -3,96 +3,35 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>台灣上市櫃股票即時行情</title>
+    <title>台灣上市股票行情</title>
     <style>
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-            margin: 20px;
-            background-color: #f5f7f9;
-            color: #333;
-        }
-        .container {
-            max-width: 1200px;
-            margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        }
-        .header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 2px solid #eee;
-            padding-bottom: 15px;
-            margin-bottom: 20px;
-        }
-        h1 { margin: 0; font-size: 24px; color: #0056b3; }
-        .btn {
-            background-color: #007bff;
-            color: white;
-            border: none;
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            font-size: 14px;
-        }
-        .btn:hover { background-color: #0056b3; }
-        .btn:disabled { background-color: #cccccc; cursor: not-allowed; }
-        .status { font-size: 14px; color: #666; }
-        
-        /* 搜尋與篩選 */
-        .controls {
-            margin-bottom: 15px;
-            display: flex;
-            gap: 10px;
-        }
-        .search-input {
-            padding: 8px 12px;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            width: 250px;
-        }
-
-        /* 表格樣式 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 10px;
-        }
-        th, td {
-            padding: 12px 15px;
-            text-align: left;
-            border-bottom: 1px solid #ddd;
-        }
-        th {
-            background-color: #f8f9fa;
-            position: sticky;
-            top: 0;
-            color: #495057;
-        }
+        body { font-family: sans-serif; margin: 20px; background-color: #f5f7f9; }
+        .container { max-width: 1200px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+        .header { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 15px; margin-bottom: 20px; }
+        .btn { background-color: #007bff; color: white; border: none; padding: 10px 20px; border-radius: 4px; cursor: pointer; }
+        .btn:disabled { background-color: #ccc; }
+        .search-input { padding: 8px 12px; border: 1px solid #ccc; border-radius: 4px; width: 250px; margin-bottom: 15px; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 12px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #f8f9fa; position: sticky; top: 0; }
         tr:hover { background-color: #f1f3f5; }
-        
-        /* 漲跌顏色呈現 */
-        .up { color: #eb2f96; font-weight: bold; }   /* 台灣習慣：紅漲 */
-        .down { color: #389e0d; font-weight: bold; } /* 台灣習慣：綠跌 */
-        .loading { text-align: center; padding: 4px; font-size: 18px; color: #666; }
+        .up { color: #eb2f96; font-weight: bold; }
+        .down { color: #389e0d; font-weight: bold; }
+        .loading { text-align: center; padding: 20px; font-size: 16px; color: #666; }
     </style>
 </head>
 <body>
 
 <div class="container">
     <div class="header">
-        <h1>台灣上市櫃股票即時行情 (每20秒自動更新)</h1>
+        <h1>台灣上市股票行情 (每20秒自動更新)</h1>
         <div>
-            <span id="updateTime" class="status">尚未更新</span>
-            <button id="refreshBtn" class="btn" onclick="fetchStockData()">手動重新整理</button>
+            <span id="updateTime" style="color: #666; margin-right: 10px;">尚未更新</span>
+            <button id="refreshBtn" class="btn" onclick="fetchStockData()">手動更新</button>
         </div>
     </div>
 
-    <div class="controls">
-        <input type="text" id="searchInput" class="search-input" placeholder="輸入代號或名稱搜尋..." oninput="filterData()">
-    </div>
+    <input type="text" id="searchInput" class="search-input" placeholder="輸入代號或名稱搜尋..." oninput="filterData()">
 
     <div style="overflow-x: auto; max-height: 600px;">
         <table>
@@ -100,30 +39,25 @@
                 <tr>
                     <th>股票代號</th>
                     <th>股票名稱</th>
-                    <th>當盤開盤價</th>
-                    <th>當盤最高價</th>
-                    <th>當盤最低價</th>
-                    <th>當盤成交價 (股價)</th>
-                    <th>累積成交量</th>
+                    <th>開盤價</th>
+                    <th>最高價</th>
+                    <th>最低價</th>
+                    <th>收盤價 (股價)</th>
+                    <th>成交股數</th>
                 </tr>
             </thead>
             <tbody id="stockTableBody">
-                <tr>
-                    <td colspan="7" class="loading">資料載入中...</td>
-                </tr>
+                <tr><td colspan="7" class="loading">資料載入中...</td></tr>
             </tbody>
         </table>
     </div>
 </div>
 
 <script>
-    // 採用政府開放資料：每日公佈之盤中不含零股個股即時行情
-    const API_URL = 'https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_AVG_ALL'; 
-    // 備用開放資料 API（若上方 API 欄位不符需求可替換為：https://openapi.twse.com.tw/v1/stock/t187ap14_ALL ）
-    
+    // 使用證交所最穩定的每日收盤行情 API (支援前端 CORS)
+    const API_URL = 'https://openapi.twse.com.tw/v1/exchangeReport/STOCK_DAY_ALL'; 
     let allStocks = [];
 
-    // 自動抓取主程式
     async function fetchStockData() {
         const btn = document.getElementById('refreshBtn');
         const timeSpan = document.getElementById('updateTime');
@@ -131,34 +65,39 @@
         timeSpan.textContent = '更新中...';
 
         try {
-            // 由於證交所每日盤中快取 API 
-            const response = await fetch('https://openapi.twse.com.tw/v1/stock/t187ap14_ALL');
-            if (!response.ok) throw new Error('API 請求失敗');
+            const response = await fetch(API_URL);
+            if (!response.ok) throw new Error(`HTTP 錯誤! 狀態碼: ${response.status}`);
             
             const data = await response.json();
             
-            // 資料格式化
+            if (!Array.isArray(data)) {
+                throw new Error('API 回傳格式異常');
+            }
+
+            // 自動相容中英文欄位名稱
             allStocks = data.map(item => ({
-                code: item.Code || item.股票代號,
-                name: item.Name || item.股票名稱,
+                code: item.Code || item.CodeNo || item.股票代號 || '',
+                name: item.Name || item.股票名稱 || '',
                 open: item.OpenPrice || item.開盤價 || '--',
                 high: item.HighPrice || item.最高價 || '--',
                 low: item.LowPrice || item.最低價 || '--',
-                price: item.TradePrice || item.當盤成交價 || item.收盤價 || '--',
-                volume: item.TradeVolume || item.成交量 || '--'
-            }));
+                price: item.ClosingPrice || item.收盤價 || item.TradePrice || '--',
+                volume: item.TradeVolume || item.成交股數 || '0'
+            })).filter(stock => stock.code !== ''); // 過濾空資料
 
             renderTable(allStocks);
-            timeSpan.textContent = `最後更新時間：${new Date().toLocaleTimeString()}`;
+            timeSpan.textContent = `最後更新：${new Date().toLocaleTimeString()}`;
         } catch (error) {
-            console.error(error);
-            timeSpan.textContent = '更新失敗，請檢查網路或稍後再試';
+            console.error('抓取失敗:', error);
+            timeSpan.textContent = `錯誤: ${error.message}`;
+            document.getElementById('stockTableBody').innerHTML = `
+                <tr><td colspan="7" class="loading" style="color:red;">資料抓取失敗 (${error.message})，請檢查網路或稍後再試。</td></tr>
+            `;
         } finally {
             btn.disabled = false;
         }
     }
 
-    // 渲染表格內容
     function renderTable(data) {
         const tbody = document.getElementById('stockTableBody');
         if (data.length === 0) {
@@ -167,7 +106,6 @@
         }
 
         tbody.innerHTML = data.map(stock => {
-            // 判斷股價是否大於開盤價（簡單標示紅綠，因開盤資料可能為 '--'，做基本防錯）
             let priceClass = '';
             const p = parseFloat(stock.price);
             const o = parseFloat(stock.open);
@@ -190,7 +128,6 @@
         }).join('');
     }
 
-    // 前端即時搜尋過濾
     function filterData() {
         const keyword = document.getElementById('searchInput').value.trim().toLowerCase();
         if (!keyword) {
@@ -204,10 +141,8 @@
         renderTable(filtered);
     }
 
-    // 初始化載入
+    // 初始化與定時器
     fetchStockData();
-
-    // 設定每 20 秒自動抓取更新一次 (20000 毫秒)
     setInterval(fetchStockData, 20000);
 </script>
 
